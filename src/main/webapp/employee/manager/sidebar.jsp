@@ -13,6 +13,14 @@
                     class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-indigo-700 transition font-semibold text-sm">
                     <span>🏠</span> Dashboard
                 </a>
+                <a href="view_products.jsp"
+                    class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-indigo-700 transition font-semibold text-sm">
+                    <span>📦</span> Inventory
+                </a>
+                <a href="target_orders.jsp"
+                    class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-indigo-700 transition font-semibold text-sm">
+                    <span>📋</span> Orders
+                </a>
                 <a href="profile.jsp"
                     class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-indigo-700 transition font-semibold text-sm">
                     <span>👤</span> My Profile

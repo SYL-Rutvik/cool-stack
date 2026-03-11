@@ -83,9 +83,9 @@
                 <a href="login.jsp" id="nav-staff-login" class="px-4 py-2 rounded-xl border-2 border-purple-500 text-purple-600 font-semibold hover:bg-purple-50 transition-all duration-200">
                     Staff Login
                 </a>
-                <a href="menu.jsp" id="nav-order-now" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold hover:opacity-90 hover:scale-105 transition-all duration-200 shadow-lg">
+                <!-- <a href="menu.jsp" id="nav-order-now" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold hover:opacity-90 hover:scale-105 transition-all duration-200 shadow-lg">
                     Order Now ✨
-                </a>
+                </a> -->
             </div>
         </div>
     </nav>
@@ -104,10 +104,10 @@
             </p>
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="menu.jsp" id="hero-order-now"
+                <!-- <a href="menu.jsp" id="hero-order-now"
                    class="px-8 py-4 bg-yellow-400 text-gray-900 font-bold text-lg rounded-2xl hover:bg-yellow-300 hover:scale-105 transition-all duration-300 shadow-2xl">
                     🛒 Order Now
-                </a>
+                </a> -->
                 <a href="login.jsp" id="hero-staff-login"
                    class="px-8 py-4 glass text-white font-bold text-lg rounded-2xl hover:bg-white/20 hover:scale-105 transition-all duration-300">
                     🔐 Staff Login

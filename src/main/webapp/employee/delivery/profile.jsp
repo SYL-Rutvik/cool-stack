@@ -62,7 +62,7 @@
                                 class="absolute bottom-1 right-1 bg-orange-600 text-white w-9 h-9 rounded-full flex items-center justify-center text-lg shadow hover:bg-orange-800 transition">📷</button>
                         </div>
                         <input type="file" id="fileInput" accept="image/*" onchange="uploadPhoto(event)">
-                        <p class="font-black text-xl text-gray-800" id="displayName">Neha Singh</p>
+                        <p class="font-black text-xl text-gray-800" id="displayName">Amit Singh</p>
                         <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold mt-1">🛵
                             Delivery Boy</span>
                         <button onclick="document.getElementById('fileInput').click()"
@@ -80,7 +80,7 @@
                         <div class="space-y-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div><label class="text-xs font-bold text-gray-400 uppercase">Full Name</label>
-                                    <p id="view-name" class="font-semibold text-gray-800 mt-0.5">Neha Singh</p><input
+                                    <p id="view-name" class="font-semibold text-gray-800 mt-0.5">Amit Singh</p><input
                                         id="edit-name" type="text" value="Neha Singh"
                                         class="hidden w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-0.5 text-sm outline-none">
                                 </div>
@@ -90,7 +90,7 @@
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div><label class="text-xs font-bold text-gray-400 uppercase">Email</label>
-                                    <p id="view-email" class="font-semibold text-gray-800 mt-0.5">neha@coolstock.in</p>
+                                    <p id="view-email" class="font-semibold text-gray-800 mt-0.5">amit@coolstock.in</p>
                                     <input id="edit-email" type="email" value="neha@coolstock.in"
                                         class="hidden w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-0.5 text-sm outline-none">
                                 </div>

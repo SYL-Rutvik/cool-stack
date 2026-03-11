@@ -25,8 +25,15 @@
                             <h1 class="text-3xl font-black">&#x1F3EA; Manage Customers</h1>
                             <p class="opacity-70 mt-1">B2B wholesale shop owners who place bulk orders</p>
                         </div>
-                        <input id="searchInput" type="text" placeholder="Search customer..." oninput="filterCustomers()"
-                            class="bg-white/20 border border-white/30 text-white placeholder-white/60 rounded-xl px-4 py-2 text-sm font-semibold outline-none w-52">
+                        <div class="flex gap-4 items-center">
+                            <input id="searchInput" type="text" placeholder="Search customer..."
+                                oninput="filterCustomers()"
+                                class="bg-white/20 border border-white/30 text-white placeholder-white/60 rounded-xl px-4 py-2 text-sm font-semibold outline-none w-52">
+                            <button onclick="openCustomerModal()"
+                                class="bg-purple-900 hover:bg-purple-800 text-white px-5 py-2 rounded-xl font-bold transition shadow-md">
+                                ➕ Add Customer
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Stats -->
@@ -47,6 +54,61 @@
 
                     <div class="grid grid-cols-3 gap-6" id="customerGrid"></div>
                 </div>
+        </div>
+
+        <!-- Add Customer Modal -->
+        <div id="customerModal"
+            class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white rounded-2xl shadow-2xl w-[500px] overflow-hidden transform transition-all">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-purple-50">
+                    <h2 class="text-xl font-black text-gray-800">Add New Customer</h2>
+                    <button onclick="closeCustomerModal()"
+                        class="text-gray-400 hover:text-red-500 text-2xl leading-none">&times;</button>
+                </div>
+                <form id="addCustomerForm" onsubmit="handleAddCustomer(event)" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Shop/Business Name</label>
+                        <input type="text" id="custName" required
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Owner Name</label>
+                        <input type="text" id="custOwner" required
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Phone</label>
+                            <input type="text" id="custPhone" required
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Area / Location</label>
+                            <input type="text" id="custArea" required
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Email Address (Optional)</label>
+                            <input type="email" id="custEmail"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Password</label>
+                            <input type="password" id="custPassword" required
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition">
+                        </div>
+                    </div>
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100 mt-6">
+                        <button type="button" onclick="closeCustomerModal()"
+                            class="px-5 py-2 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition">Cancel</button>
+                        <button type="submit"
+                            class="px-5 py-2 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition shadow-md">Add
+                            Customer</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <script>
@@ -107,6 +169,40 @@
                 for (var i = 0; i < cards.length; i++) {
                     cards[i].style.display = cards[i].getAttribute('data-search').indexOf(q) !== -1 ? 'block' : 'none';
                 }
+            }
+
+            function openCustomerModal() {
+                document.getElementById('customerModal').classList.remove('hidden');
+            }
+            function closeCustomerModal() {
+                document.getElementById('customerModal').classList.add('hidden');
+                document.getElementById('addCustomerForm').reset();
+            }
+            function handleAddCustomer(e) {
+                e.preventDefault();
+                var name = document.getElementById('custName').value;
+                var owner = document.getElementById('custOwner').value;
+                var phone = document.getElementById('custPhone').value;
+                var area = document.getElementById('custArea').value;
+                var email = document.getElementById('custEmail').value || 'N/A';
+                var password = document.getElementById('custPassword').value;
+
+                var newCust = {
+                    key: 'cs_profile_cust_' + Date.now(),
+                    name: name,
+                    owner: owner,
+                    area: area,
+                    phone: phone,
+                    email: email,
+                    orders: 0,
+                    spend: '0',
+                    joined: 'Today'
+                };
+
+                customers.unshift(newCust);
+                buildCustomerCards(customers);
+                filterCustomers();
+                closeCustomerModal();
             }
 
             buildCustomerCards(customers);

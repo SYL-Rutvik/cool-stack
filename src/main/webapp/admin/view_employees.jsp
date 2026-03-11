@@ -25,17 +25,77 @@
                             <h1 class="text-3xl font-black">&#x1F465; Manage Staff</h1>
                             <p class="opacity-70 mt-1">All Managers, Cashiers and Delivery Boys in the system</p>
                         </div>
-                        <select id="roleFilter" onchange="filterStaff()"
-                            class="bg-white/20 border border-white/30 text-white rounded-xl px-4 py-2 text-sm font-semibold outline-none">
-                            <option value="all">All Roles</option>
-                            <option value="Manager">Manager</option>
-                            <option value="Cashier">Cashier</option>
-                            <option value="Delivery">Delivery</option>
-                        </select>
+                        <div class="flex gap-4 items-center">
+                            <select id="roleFilter" onchange="filterStaff()"
+                                class="bg-white/20 border border-white/30 text-white rounded-xl px-4 py-2 text-sm font-semibold outline-none w-40">
+                                <option value="all" class="text-gray-800">All Roles</option>
+                                <option value="Manager" class="text-gray-800">Manager</option>
+                                <option value="Cashier" class="text-gray-800">Cashier</option>
+                                <option value="Delivery" class="text-gray-800">Delivery</option>
+                            </select>
+                            <button onclick="openStaffModal()"
+                                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl font-bold transition shadow-md">
+                                ➕ Add Staff
+                            </button>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-6" id="staffGrid"></div>
                 </div>
+        </div>
+
+        <!-- Add Staff Modal -->
+        <div id="staffModal"
+            class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white rounded-2xl shadow-2xl w-[500px] overflow-hidden transform transition-all">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h2 class="text-xl font-black text-gray-800">Add New Staff</h2>
+                    <button onclick="closeStaffModal()"
+                        class="text-gray-400 hover:text-red-500 text-2xl leading-none">&times;</button>
+                </div>
+                <form id="addStaffForm" onsubmit="handleAddStaff(event)" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="staffName" required
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Role</label>
+                            <select id="staffRole"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-white">
+                                <option value="Manager">Manager</option>
+                                <option value="Cashier">Cashier</option>
+                                <option value="Delivery">Delivery</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Phone</label>
+                            <input type="text" id="staffPhone" required
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
+                            <input type="email" id="staffEmail" required
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Password</label>
+                            <input type="password" id="staffPassword" required
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+                        </div>
+                    </div>
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100 mt-6">
+                        <button type="button" onclick="closeStaffModal()"
+                            class="px-5 py-2 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition">Cancel</button>
+                        <button type="submit"
+                            class="px-5 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-md">Add
+                            Member</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <script>
@@ -99,6 +159,45 @@
                 for (var i = 0; i < cards.length; i++) {
                     cards[i].style.display = (role === 'all' || cards[i].getAttribute('data-role') === role) ? 'block' : 'none';
                 }
+            }
+
+            function openStaffModal() {
+                document.getElementById('staffModal').classList.remove('hidden');
+            }
+            function closeStaffModal() {
+                document.getElementById('staffModal').classList.add('hidden');
+                document.getElementById('addStaffForm').reset();
+            }
+            function handleAddStaff(e) {
+                e.preventDefault();
+                var name = document.getElementById('staffName').value;
+                var role = document.getElementById('staffRole').value;
+                var phone = document.getElementById('staffPhone').value;
+                var email = document.getElementById('staffEmail').value;
+                var password = document.getElementById('staffPassword').value;
+
+                var badges = {
+                    'Manager': 'bg-indigo-100 text-indigo-700',
+                    'Cashier': 'bg-emerald-100 text-emerald-700',
+                    'Delivery': 'bg-orange-100 text-orange-700'
+                };
+
+                var newStaff = {
+                    key: 'cs_profile_new_' + Date.now(),
+                    name: name,
+                    role: role,
+                    roleIcon: role.charAt(0),
+                    email: email,
+                    phone: phone,
+                    joined: 'Today',
+                    orders: 0,
+                    badge: badges[role]
+                };
+
+                staffList.unshift(newStaff);
+                buildStaffCards(staffList);
+                filterStaff();
+                closeStaffModal();
             }
 
             buildStaffCards(staffList);

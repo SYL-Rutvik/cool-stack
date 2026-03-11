@@ -16,13 +16,21 @@
                     class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-slate-700 transition font-semibold text-sm">
                     <span>🏠</span> Dashboard
                 </a>
-                <a href="dashboard.jsp#requests"
+                <!-- <a href="dashboard.jsp#requests"
                     class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-slate-700 transition font-semibold text-sm">
                     <span>📋</span> Join Requests
-                </a>
+                </a> -->
 
                 <!-- Management -->
                 <p class="text-xs text-slate-500 uppercase font-bold px-3 pt-4 pb-1">Management</p>
+                <a href="view_products.jsp"
+                    class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-slate-700 transition font-semibold text-sm">
+                    <span>📦</span> Manage Products
+                </a>
+                <a href="recent_orders.jsp"
+                    class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-slate-700 transition font-semibold text-sm">
+                    <span>🧾</span> Recent Orders
+                </a>
                 <a href="view_employees.jsp"
                     class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-slate-700 transition font-semibold text-sm">
                     <span>👥</span> Manage Staff

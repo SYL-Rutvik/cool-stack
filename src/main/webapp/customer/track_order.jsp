@@ -1,4 +1,4 @@
-﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="true" %>
     <!DOCTYPE html>
     <html>
 
@@ -50,6 +50,7 @@
                 <a href="place_order.jsp" class="text-gray-500 hover:text-purple-600 transition">📦 Place Order</a>
                 <a href="track_order.jsp" class="text-purple-600 border-b-2 border-purple-600 pb-0.5">📍 Track
                     Orders</a>
+                <a href="profile.jsp" class="text-gray-500 hover:text-purple-600 transition">👤 My Profile</a>
             </div>
             <a href="../logout.jsp"
                 class="bg-red-100 text-red-600 px-4 py-2 rounded-xl font-semibold text-sm hover:bg-red-200 transition">🚪
@@ -153,41 +154,53 @@
                     const cfg = statusConfig[order.status] || statusConfig['Pending'];
                     const stepsDone = cfg.steps;
 
-                    const stepsHtml = allSteps.map((s, i) => `
-            <div class="flex flex-col items-center">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mb-1
-                    ${i <= stepsDone ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-400'}">
-                    ${i <= stepsDone ? '✓' : (i + 1)}
-                </div>
-                <span class="text-xs text-center leading-tight ${i <= stepsDone ? 'text-purple-700 font-semibold' : 'text-gray-400'}" style="max-width:60px">${s}</span>
-            </div>
-            ${i < allSteps.length - 1 ? `<div class="flex-1 mt-4 h-0.5 ${i < stepsDone ? 'bg-purple-600' : 'bg-gray-200'}"></div>` : ''}
-        `).join('');
+                    var stepsHtml = '';
+                    for (var i = 0; i < allSteps.length; i++) {
+                        var s = allSteps[i];
+                        var circleBg = (i <= stepsDone) ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-400';
+                        var circleContent = (i <= stepsDone) ? '✓' : (i + 1);
+                        var textClass = (i <= stepsDone) ? 'text-purple-700 font-semibold' : 'text-gray-400';
+
+                        stepsHtml += '<div class="flex flex-col items-center">';
+                        stepsHtml += '<div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mb-1 ' + circleBg + '">';
+                        stepsHtml += circleContent;
+                        stepsHtml += '</div>';
+                        stepsHtml += '<span class="text-xs text-center leading-tight ' + textClass + '" style="max-width:60px">' + s + '</span>';
+                        stepsHtml += '</div>';
+
+                        if (i < allSteps.length - 1) {
+                            var lineBg = (i < stepsDone) ? 'bg-purple-600' : 'bg-gray-200';
+                            stepsHtml += '<div class="flex-1 mt-4 h-0.5 ' + lineBg + '"></div>';
+                        }
+                    }
+
+                    var btnHtml = '';
+                    if (order.status === 'Paid') {
+                        btnHtml = '<button onclick="viewInvoice(\'' + order.id + '\',\'' + order.shop + '\',\'' + order.addr + '\',\'' + order.items + '\',' + order.amount + ')" ' +
+                            'class="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition text-sm">' +
+                            '📄 Download Invoice</button>';
+                    } else {
+                        btnHtml = '<p class="text-center text-xs text-gray-400 bg-gray-50 rounded-xl py-2">Invoice will be available after payment verification by Cashier</p>';
+                    }
 
                     const card = document.createElement('div');
                     card.className = 'bg-white rounded-2xl shadow-lg p-6';
-                    card.innerHTML = `
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <span class="font-black text-xl text-gray-800">${order.id}</span>
-                    <span class="${cfg.color} ml-2 px-3 py-0.5 rounded-full text-xs font-bold">${cfg.icon} ${order.status}</span>
-                    <p class="text-gray-400 text-xs mt-1">📅 ${order.date}</p>
-                </div>
-                <p class="font-black text-2xl text-purple-700">₹${Number(order.amount).toLocaleString('en-IN')}</p>
-            </div>
-            <p class="text-sm text-gray-600 mb-1">🏪 <strong>${order.shop}</strong> — ${order.addr}</p>
-            <p class="text-sm text-gray-500 mb-5">📦 ${order.items}</p>
 
-            <!-- Progress Bar -->
-            <div class="flex items-center mb-5">${stepsHtml}</div>
+                    var html = '';
+                    html += '<div class="flex justify-between items-start mb-4">';
+                    html += '<div>';
+                    html += '<span class="font-black text-xl text-gray-800">' + order.id + '</span>';
+                    html += '<span class="' + cfg.color + ' ml-2 px-3 py-0.5 rounded-full text-xs font-bold">' + cfg.icon + ' ' + order.status + '</span>';
+                    html += '<p class="text-gray-400 text-xs mt-1">📅 ' + order.date + '</p>';
+                    html += '</div>';
+                    html += '<p class="font-black text-2xl text-purple-700">&#x20B9;' + Number(order.amount).toLocaleString('en-IN') + '</p>';
+                    html += '</div>';
+                    html += '<p class="text-sm text-gray-600 mb-1">🏪 <strong>' + order.shop + '</strong> \u2014 ' + order.addr + '</p>';
+                    html += '<p class="text-sm text-gray-500 mb-5">📦 ' + order.items + '</p>';
+                    html += '<div class="flex w-full items-start mb-5">' + stepsHtml + '</div>';
+                    html += btnHtml;
 
-            ${order.status === 'Paid' ? `
-            <button onclick="viewInvoice('${order.id}','${order.shop}','${order.addr}','${order.items}',${order.amount})"
-                class="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition text-sm">
-                📄 Download Invoice
-            </button>` : `
-            <p class="text-center text-xs text-gray-400 bg-gray-50 rounded-xl py-2">Invoice will be available after payment verification by Cashier</p>`}
-        `;
+                    card.innerHTML = html;
                     container.appendChild(card);
                 });
             }
