@@ -100,11 +100,27 @@
 
         <script>
             var staffList = [
-                { key: 'cs_profile_manager', name: 'Amit Sharma', role: 'Manager', roleIcon: 'M', email: 'amit@coolstock.in', phone: '+91 98001 11111', joined: '1 Jan 2025', orders: 138, badge: 'bg-indigo-100 text-indigo-700' },
-                { key: 'cs_profile_delivery', name: 'Neha Singh', role: 'Delivery', roleIcon: 'D', email: 'neha@coolstock.in', phone: '+91 98001 22222', joined: '5 Feb 2025', orders: 92, badge: 'bg-orange-100 text-orange-700' },
-                { key: 'cs_profile_cashier', name: 'Priya Patel', role: 'Cashier', roleIcon: 'C', email: 'priya@coolstock.in', phone: '+91 98001 33333', joined: '10 Mar 2025', orders: 0, badge: 'bg-emerald-100 text-emerald-700' },
-                { key: 'cs_profile_delivery2', name: 'Rohit Das', role: 'Delivery', roleIcon: 'D', email: 'rohit@coolstock.in', phone: '+91 98001 44444', joined: '15 Apr 2025', orders: 74, badge: 'bg-orange-100 text-orange-700' },
-                { key: 'cs_profile_delivery3', name: 'Arjun Mehta', role: 'Delivery', roleIcon: 'D', email: 'arjun@coolstock.in', phone: '+91 98001 55555', joined: '20 May 2025', orders: 61, badge: 'bg-orange-100 text-orange-700' }
+                <% 
+                    try (java.sql.Connection conn = com.coolstack.util.DBConnection.getConnection()) {
+                java.sql.Statement stmt = conn.createStatement();
+                // Unified query for all staff roles
+                java.sql.ResultSet rsStaff = stmt.executeQuery("SELECT id, name, email, phone, role, profile_photo, created_at FROM users WHERE role IN ('manager', 'cashier', 'delivery')");
+
+                while (rsStaff.next()) {
+                            String role = rsStaff.getString("role");
+                            String displayRole = role.substring(0, 1).toUpperCase() + role.substring(1);
+                            String badge = "bg-gray-100 text-gray-700";
+                            String photo = rsStaff.getString("profile_photo");
+                    if (photo == null || photo.isEmpty()) photo = "";
+
+                    if (role.equals("manager")) badge = "bg-indigo-100 text-indigo-700";
+                    else if (role.equals("cashier")) badge = "bg-emerald-100 text-emerald-700";
+                    else if (role.equals("delivery")) badge = "bg-orange-100 text-orange-700";
+
+                    out.print("{ key: 'db_user_" + rsStaff.getInt("id") + "', name: '" + rsStaff.getString("name").replace("'", "\\'") + "', role: '" + displayRole + "', roleIcon: '" + displayRole.charAt(0) + "', email: '" + rsStaff.getString("email").replace("'", "\\'") + "', phone: '" + rsStaff.getString("phone").replace("'", "\\'") + "', dbPhoto: '" + photo + "', joined: '" + rsStaff.getTimestamp("created_at") + "', orders: 0, badge: '" + badge + "' },");
+                }
+            } catch (Exception e) { e.printStackTrace(); }
+                %>
             ];
 
             var roleEmoji = { 'Manager': '📊', 'Cashier': '💳', 'Delivery': '🛵' };

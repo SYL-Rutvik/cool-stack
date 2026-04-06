@@ -52,56 +52,104 @@
                         </div>
                         <!-- Details Card -->
                         <div class="col-span-2 bg-white rounded-2xl shadow-lg p-6">
-                            <div class="flex justify-between items-center mb-6">
-                                <h2 class="text-xl font-bold text-gray-800">Profile Details</h2>
-                                <button id="editBtn" onclick="toggleEdit()"
-                                    class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-800 transition">✏️
-                                    Edit Profile</button>
-                            </div>
-                            <div class="space-y-4">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div><label class="text-xs font-bold text-gray-400 uppercase">Full Name</label>
-                                        <p id="view-name" class="font-semibold text-gray-800 mt-0.5">Amit Sharma</p>
-                                        <input id="edit-name" type="text" value="Amit Sharma"
-                                            class="hidden w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-0.5 text-sm focus:border-indigo-400 outline-none">
-                                    </div>
-                                    <div><label class="text-xs font-bold text-gray-400 uppercase">Role</label>
-                                        <p class="font-semibold text-gray-800 mt-0.5">📊 Manager</p>
-                                    </div>
+                            <form action="<%=request.getContextPath()%>/ManagerProfileServlet" method="POST">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-bold text-gray-800">Profile Details</h2>
+                                    <button type="button" id="editBtn" onclick="toggleEdit()"
+                                        class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-800 transition">✏️
+                                        Edit Profile</button>
                                 </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div><label class="text-xs font-bold text-gray-400 uppercase">Email</label>
-                                        <p id="view-email" class="font-semibold text-gray-800 mt-0.5">amit@coolstock.in
-                                        </p><input id="edit-email" type="email" value="amit@coolstock.in"
-                                            class="hidden w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-0.5 text-sm focus:border-indigo-400 outline-none">
+
+                                <% com.coolstack.model.Manager manager=(com.coolstack.model.Manager)
+                                    request.getAttribute("manager"); if (manager==null) { int
+                                    loggedId=(session.getAttribute("loggedUserId") !=null) ? (int)
+                                    session.getAttribute("loggedUserId") : -1; if (loggedId !=-1) {
+                                    com.coolstack.dao.ManagerDAO dao=new com.coolstack.dao.ManagerDAO();
+                                    manager=dao.getManagerById(loggedId); } if (manager==null) {
+                                    response.sendRedirect(request.getContextPath()
+                                    + "/login.jsp?error=Please Login First" ); return; } } %>
+                                    <input type="hidden" name="id" value="<%= manager.getId() %>">
+
+                                    <div class="space-y-4">
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div><label class="text-xs font-bold text-gray-400 uppercase">Full
+                                                    Name</label>
+                                                <p id="view-name" class="font-semibold text-gray-800 mt-0.5">
+                                                    <%= manager.getName() %>
+                                                </p>
+                                                <input id="edit-name" name="name" type="text"
+                                                    value="<%= manager.getName() %>"
+                                                    class="hidden w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-0.5 text-sm focus:border-indigo-400 outline-none">
+                                            </div>
+                                            <div><label class="text-xs font-bold text-gray-400 uppercase">Role</label>
+                                                <p class="font-semibold text-gray-800 mt-0.5">📊 Manager</p>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div><label class="text-xs font-bold text-gray-400 uppercase">Email</label>
+                                                <p id="view-email" class="font-semibold text-gray-800 mt-0.5">
+                                                    <%= manager.getEmail() %>
+                                                </p>
+                                                <input id="edit-email" name="email" type="email"
+                                                    value="<%= manager.getEmail() %>"
+                                                    class="hidden w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-0.5 text-sm focus:border-indigo-400 outline-none">
+                                            </div>
+                                            <div><label
+                                                    class="text-xs font-bold text-gray-400 uppercase">Contact</label>
+                                                <p id="view-phone" class="font-semibold text-gray-800 mt-0.5">
+                                                    <%= manager.getPhone() %>
+                                                </p>
+                                                <input id="edit-phone" name="phone" type="text"
+                                                    value="<%= manager.getPhone() %>"
+                                                    class="hidden w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-0.5 text-sm focus:border-indigo-400 outline-none">
+                                            </div>
+                                        </div>
+                                        <div><label class="text-xs font-bold text-gray-400 uppercase">Username</label>
+                                            <p class="font-semibold text-gray-800 mt-0.5">manager</p>
+                                        </div>
                                     </div>
-                                    <div><label class="text-xs font-bold text-gray-400 uppercase">Contact</label>
-                                        <p id="view-phone" class="font-semibold text-gray-800 mt-0.5">+91 98001 11111
-                                        </p><input id="edit-phone" type="text" value="+91 98001 11111"
-                                            class="hidden w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-0.5 text-sm focus:border-indigo-400 outline-none">
-                                    </div>
-                                </div>
-                                <div><label class="text-xs font-bold text-gray-400 uppercase">Username</label>
-                                    <p class="font-semibold text-gray-800 mt-0.5">manager</p>
-                                </div>
-                            </div>
-                            <button id="saveBtn" onclick="saveProfile()"
-                                class="hidden mt-6 w-full py-3 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-700 transition">💾
-                                Save Changes</button>
-                            <div id="savedMsg"
-                                class="hidden mt-4 bg-green-50 text-green-700 p-3 rounded-xl text-sm font-semibold text-center">
-                                ✅ Profile updated successfully!</div>
+                                    <button id="saveBtn" type="submit"
+                                        class="hidden mt-6 w-full py-3 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-700 transition">💾
+                                        Save Changes</button>
+                                    <% if ("success".equals(request.getParameter("status"))) { %>
+                                        <div id="savedMsg"
+                                            class="mt-4 bg-green-50 text-green-700 p-3 rounded-xl text-sm font-semibold text-center">
+                                            ✅ Profile updated successfully!</div>
+                                        <% } else if ("error".equals(request.getParameter("status"))) { %>
+                                            <div id="errorMsg"
+                                                class="mt-4 bg-red-50 text-red-700 p-3 rounded-xl text-sm font-semibold text-center">
+                                                ❌ Failed to update profile!</div>
+                                            <% } %>
+                            </form>
                         </div>
                     </div>
                 </div>
         </div>
         <script>
-            const KEY = 'cs_profile_manager';
-            function loadProfile() { const d = JSON.parse(localStorage.getItem(KEY) || '{}'); if (d.photo) document.getElementById('photoPreview').src = d.photo; if (d.name) { document.getElementById('view-name').innerText = d.name; document.getElementById('edit-name').value = d.name; document.getElementById('displayName').innerText = d.name; } if (d.email) { document.getElementById('view-email').innerText = d.email; document.getElementById('edit-email').value = d.email; } if (d.phone) { document.getElementById('view-phone').innerText = d.phone; document.getElementById('edit-phone').value = d.phone; } }
-            function toggleEdit() { const e = !document.getElementById('saveBtn').classList.contains('hidden');['name', 'email', 'phone'].forEach(f => { document.getElementById('view-' + f).classList.toggle('hidden', !e); document.getElementById('edit-' + f).classList.toggle('hidden', e); }); document.getElementById('saveBtn').classList.toggle('hidden'); document.getElementById('editBtn').innerText = e ? '✏️ Edit Profile' : '✖ Cancel'; document.getElementById('savedMsg').classList.add('hidden'); }
-            function saveProfile() { const d = JSON.parse(localStorage.getItem(KEY) || '{}');['name', 'email', 'phone'].forEach(f => { d[f] = document.getElementById('edit-' + f).value; }); localStorage.setItem(KEY, JSON.stringify(d)); document.getElementById('view-name').innerText = d.name; document.getElementById('view-email').innerText = d.email; document.getElementById('view-phone').innerText = d.phone; document.getElementById('displayName').innerText = d.name; toggleEdit(); document.getElementById('savedMsg').classList.remove('hidden'); setTimeout(() => document.getElementById('savedMsg').classList.add('hidden'), 3000); }
-            function uploadPhoto(e) { const r = new FileReader(); r.onload = ev => { document.getElementById('photoPreview').src = ev.target.result; const d = JSON.parse(localStorage.getItem(KEY) || '{}'); d.photo = ev.target.result; localStorage.setItem(KEY, JSON.stringify(d)); }; r.readAsDataURL(e.target.files[0]); }
-            loadProfile();
+            function toggleEdit() {
+                const isEditing = !document.getElementById('saveBtn').classList.contains('hidden');
+                const fields = ['name', 'email', 'phone'];
+
+                fields.forEach(f => {
+                    const viewEl = document.getElementById('view-' + f);
+                    const editEl = document.getElementById('edit-' + f);
+                    if (viewEl && editEl) {
+                        viewEl.classList.toggle('hidden', !isEditing);
+                        editEl.classList.toggle('hidden', isEditing);
+                    }
+                });
+
+                document.getElementById('saveBtn').classList.toggle('hidden');
+                document.getElementById('editBtn').innerText = isEditing ? '✏️ Edit Profile' : '✖ Cancel';
+            }
+
+            function uploadPhoto(e) {
+                const r = new FileReader();
+                r.onload = ev => {
+                    document.getElementById('photoPreview').src = ev.target.result;
+                };
+                r.readAsDataURL(e.target.files[0]);
+            }
         </script>
     </body>
 

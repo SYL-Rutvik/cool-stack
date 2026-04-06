@@ -34,194 +34,104 @@
 						</div>
 					</div>
 
-					<!-- Stats Overview -->
-					<div class="grid grid-cols-4 gap-6 mb-8">
-						<div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
-							<p class="text-gray-400 text-sm">Total Customers</p>
-							<p class="text-3xl font-black text-slate-700 mt-2">24</p>
-							<p class="text-green-500 text-xs mt-1">↑ 3 new this week</p>
-						</div>
-						<div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
-							<p class="text-gray-400 text-sm">Total Employees</p>
-							<p class="text-3xl font-black text-blue-600 mt-2">12</p>
-							<p class="text-gray-400 text-xs mt-1">Manager · Delivery · Cashier</p>
-						</div>
-						<div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
-							<p class="text-gray-400 text-sm">Orders This Month</p>
-							<p class="text-3xl font-black text-purple-600 mt-2">138</p>
-							<p class="text-green-500 text-xs mt-1">↑ 12% vs last month</p>
-						</div>
-						<div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
-							<p class="text-gray-400 text-sm">Pending Join Requests</p>
-							<p class="text-3xl font-black text-orange-500 mt-2" id="pendingCount">3</p>
-							<p class="text-orange-400 text-xs mt-1">Awaiting approval</p>
-						</div>
-					</div>
-
-					<!-- Join Requests Section -->
-					<div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-						<div class="flex justify-between items-center p-6 border-b bg-orange-50">
-							<div>
-								<h2 class="text-xl font-bold text-gray-800">📋 New Join Requests</h2>
-								<p class="text-gray-400 text-sm mt-0.5">Review applicants and approve to add them to the
-									system</p>
+					<% int tCust=0, tEmp=0, tOrd=0; try (java.sql.Connection
+						conn=com.coolstack.util.DBConnection.getConnection(); java.sql.Statement
+						stmt=conn.createStatement()) { java.sql.ResultSet
+						rs=stmt.executeQuery( "SELECT COUNT(*) FROM users WHERE role = 'customer'" ); if(rs.next())
+						tCust=rs.getInt(1);
+						rs=stmt.executeQuery( "SELECT COUNT(*) FROM users WHERE role IN ('manager', 'cashier', 'delivery')"
+						); if(rs.next()) tEmp=rs.getInt(1); rs=stmt.executeQuery( "SELECT COUNT(*) FROM orders" );
+						if(rs.next()) tOrd=rs.getInt(1); } catch(Exception e) { e.printStackTrace(); } %>
+						<!-- Stats Overview -->
+						<div class="grid grid-cols-4 gap-6 mb-8">
+							<div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
+								<p class="text-gray-400 text-sm">Total Customers</p>
+								<p class="text-3xl font-black text-slate-700 mt-2">
+									<%= tCust %>
+								</p>
+								<p class="text-green-500 text-xs mt-1">↑ Direct DB Count</p>
 							</div>
-							<span class="bg-orange-500 text-white text-sm font-bold px-4 py-1.5 rounded-full"
-								id="badgeCount">3 Pending</span>
-						</div>
-						<div class="p-6 space-y-4" id="requestsList">
-
-							<!-- Request 1 -->
-							<div class="border-2 border-gray-100 rounded-2xl p-5 hover:border-orange-200 transition"
-								id="req-1">
-								<div class="flex justify-between items-start">
-									<div class="flex items-center gap-4">
-										<div
-											class="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center text-2xl">
-											👤</div>
-										<div>
-											<p class="font-bold text-gray-800 text-lg">Rajesh Kumar</p>
-											<p class="text-gray-500 text-sm">📞 +91 98765 43210 &nbsp;|&nbsp; 📧
-												rajesh@example.com</p>
-											<p class="text-gray-400 text-xs mt-1">Applied for: <span
-													class="font-semibold text-blue-600">Delivery Boy</span>
-												&nbsp;|&nbsp; Applied on: 10 Mar 2026</p>
-										</div>
-									</div>
-									<div class="flex gap-3">
-										<button onclick="approveRequest('req-1', 'Rajesh Kumar')"
-											class="bg-green-500 text-white px-5 py-2 rounded-xl font-semibold hover:bg-green-600 transition text-sm">
-											✅ Approve
-										</button>
-										<button onclick="rejectRequest('req-1')"
-											class="bg-red-100 text-red-600 px-5 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-sm">
-											❌ Reject
-										</button>
-									</div>
-								</div>
-								<div class="mt-3 ml-16 text-sm text-gray-500 bg-gray-50 rounded-xl p-3">
-									<span class="font-semibold">Cover Note:</span> "I have 2 years of delivery
-									experience in the food industry. Available for day shifts."
-								</div>
+							<div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
+								<p class="text-gray-400 text-sm">Total Employees</p>
+								<p class="text-3xl font-black text-blue-600 mt-2">
+									<%= tEmp %>
+								</p>
+								<p class="text-gray-400 text-xs mt-1">Manager · Delivery · Cashier</p>
 							</div>
-
-							<!-- Request 2 -->
-							<div class="border-2 border-gray-100 rounded-2xl p-5 hover:border-orange-200 transition"
-								id="req-2">
-								<div class="flex justify-between items-start">
-									<div class="flex items-center gap-4">
-										<div
-											class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-2xl">
-											👤</div>
-										<div>
-											<p class="font-bold text-gray-800 text-lg">Sunita Patel</p>
-											<p class="text-gray-500 text-sm">📞 +91 87654 32109 &nbsp;|&nbsp; 📧
-												sunita@example.com</p>
-											<p class="text-gray-400 text-xs mt-1">Applied for: <span
-													class="font-semibold text-purple-600">Cashier</span> &nbsp;|&nbsp;
-												Applied on: 9 Mar 2026</p>
-										</div>
-									</div>
-									<div class="flex gap-3">
-										<button onclick="approveRequest('req-2', 'Sunita Patel')"
-											class="bg-green-500 text-white px-5 py-2 rounded-xl font-semibold hover:bg-green-600 transition text-sm">
-											✅ Approve
-										</button>
-										<button onclick="rejectRequest('req-2')"
-											class="bg-red-100 text-red-600 px-5 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-sm">
-											❌ Reject
-										</button>
-									</div>
-								</div>
-								<div class="mt-3 ml-16 text-sm text-gray-500 bg-gray-50 rounded-xl p-3">
-									<span class="font-semibold">Cover Note:</span> "Commerce graduate with tally and
-									billing experience. Looking for full-time work."
-								</div>
+							<div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
+								<p class="text-gray-400 text-sm">Orders Recorded</p>
+								<p class="text-3xl font-black text-purple-600 mt-2">
+									<%= tOrd %>
+								</p>
+								<p class="text-green-500 text-xs mt-1">↑ Live from database</p>
 							</div>
-
-							<!-- Request 3 -->
-							<div class="border-2 border-gray-100 rounded-2xl p-5 hover:border-orange-200 transition"
-								id="req-3">
-								<div class="flex justify-between items-start">
-									<div class="flex items-center gap-4">
-										<div
-											class="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-2xl">
-											👤</div>
-										<div>
-											<p class="font-bold text-gray-800 text-lg">Vikram Shah</p>
-											<p class="text-gray-500 text-sm">📞 +91 76543 21098 &nbsp;|&nbsp; 📧
-												vikram@example.com</p>
-											<p class="text-gray-400 text-xs mt-1">Applied for: <span
-													class="font-semibold text-indigo-600">Manager</span> &nbsp;|&nbsp;
-												Applied on: 8 Mar 2026</p>
-										</div>
-									</div>
-									<div class="flex gap-3">
-										<button onclick="approveRequest('req-3', 'Vikram Shah')"
-											class="bg-green-500 text-white px-5 py-2 rounded-xl font-semibold hover:bg-green-600 transition text-sm">
-											✅ Approve
-										</button>
-										<button onclick="rejectRequest('req-3')"
-											class="bg-red-100 text-red-600 px-5 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-sm">
-											❌ Reject
-										</button>
-									</div>
-								</div>
-								<div class="mt-3 ml-16 text-sm text-gray-500 bg-gray-50 rounded-xl p-3">
-									<span class="font-semibold">Cover Note:</span> "5 years in wholesale distribution
-									management. Can handle team coordination and order workflows."
-								</div>
+							<div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
+								<p class="text-gray-400 text-sm">Pending Join Requests</p>
+								<p class="text-3xl font-black text-orange-500 mt-2" id="pendingCount">0</p>
+								<p class="text-green-500 text-xs mt-1">All processed</p>
 							</div>
+						</div>
 
+						<!-- Join Requests Section -->
+						<div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+							<div class="flex justify-between items-center p-6 border-b bg-orange-50">
+								<div>
+									<h2 class="text-xl font-bold text-gray-800">📋 New Join Requests</h2>
+									<p class="text-gray-400 text-sm mt-0.5">Review applicants and approve to add them to
+										the
+										system</p>
+								</div>
+								<span class="bg-gray-500 text-white text-sm font-bold px-4 py-1.5 rounded-full"
+									id="badgeCount">0 Pending</span>
+							</div>
+							<div class="p-6 space-y-4 hidden" id="requestsList">
+							</div>
+							<div id="noRequests" class="p-10 text-center text-gray-400">
+								<div class="text-5xl mb-3">✅</div>
+								<p class="font-semibold">All join requests have been processed!</p>
+							</div>
 						</div>
-						<div id="noRequests" class="hidden p-10 text-center text-gray-400">
-							<div class="text-5xl mb-3">✅</div>
-							<p class="font-semibold">All join requests have been processed!</p>
-						</div>
-					</div>
 
-					<!-- Current Staff List -->
-					<div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-						<div class="p-6 border-b">
-							<h2 class="text-xl font-bold text-gray-800">👥 Current Active Staff</h2>
+						<!-- Current Staff List -->
+						<div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+							<div class="p-6 border-b">
+								<h2 class="text-xl font-bold text-gray-800">👥 Current Active Staff</h2>
+							</div>
+							<table class="w-full text-sm">
+								<thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+									<tr>
+										<th class="py-3 px-6 text-left">Name</th>
+										<th class="px-6 text-left">Role</th>
+										<th class="px-6 text-left">Username</th>
+										<th class="px-6 text-left">Status</th>
+									</tr>
+								</thead>
+								<tbody class="text-gray-700">
+									<% try (java.sql.Connection conn=com.coolstack.util.DBConnection.getConnection();
+										java.sql.Statement stmt=conn.createStatement()) { java.sql.ResultSet
+										rs=stmt.executeQuery( "SELECT name, username, 'Manager' as role, '📊' as icon FROM managers "
+										+ "UNION SELECT name, username, 'Delivery' as role, '🛵' as icon FROM delivery_boys "
+										+ "UNION SELECT name, username, 'Cashier' as role, '💳' as icon FROM cashiers LIMIT 5"
+										); while(rs.next()) { %>
+										<tr class="border-b hover:bg-gray-50">
+											<td class="py-3 px-6 font-semibold">
+												<%= rs.getString("name") %>
+											</td>
+											<td class="px-6">
+												<%= rs.getString("icon") %>
+													<%= rs.getString("role") %>
+											</td>
+											<td class="px-6 text-gray-400">
+												<%= rs.getString("username") %>
+											</td>
+											<td class="px-6"><span
+													class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">Active</span>
+											</td>
+										</tr>
+										<% } } catch(Exception e) { e.printStackTrace(); } %>
+								</tbody>
+							</table>
 						</div>
-						<table class="w-full text-sm">
-							<thead class="bg-gray-50 text-gray-500 uppercase text-xs">
-								<tr>
-									<th class="py-3 px-6 text-left">Name</th>
-									<th class="px-6 text-left">Role</th>
-									<th class="px-6 text-left">Username</th>
-									<th class="px-6 text-left">Status</th>
-								</tr>
-							</thead>
-							<tbody class="text-gray-700">
-								<tr class="border-b hover:bg-gray-50">
-									<td class="py-3 px-6 font-semibold">Amit Sharma</td>
-									<td class="px-6">📊 Manager</td>
-									<td class="px-6 text-gray-400">manager</td>
-									<td class="px-6"><span
-											class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">Active</span>
-									</td>
-								</tr>
-								<tr class="border-b hover:bg-gray-50">
-									<td class="py-3 px-6 font-semibold">Neha Singh</td>
-									<td class="px-6">🛵 Delivery</td>
-									<td class="px-6 text-gray-400">delivery</td>
-									<td class="px-6"><span
-											class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">Active</span>
-									</td>
-								</tr>
-								<tr class="border-b hover:bg-gray-50">
-									<td class="py-3 px-6 font-semibold">Priya Patel</td>
-									<td class="px-6">💳 Cashier</td>
-									<td class="px-6 text-gray-400">cashier</td>
-									<td class="px-6"><span
-											class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">Active</span>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
 
 				</div>
 		</div>

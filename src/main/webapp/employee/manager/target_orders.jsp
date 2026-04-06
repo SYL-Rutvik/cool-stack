@@ -96,15 +96,23 @@
         </div>
 
         <script>
-            var orders = JSON.parse(localStorage.getItem('cs_orders') || '[]');
+            var orders = [
+                <% 
+                    try (java.sql.Connection conn = com.coolstack.util.DBConnection.getConnection()) {
+                java.sql.Statement stmt = conn.createStatement();
+                        String query = "SELECT o.id, c.shop_name, o.order_date, o.total_amount, o.status " +
+                    "FROM orders o JOIN customers c ON o.customer_id = c.id ORDER BY o.order_date DESC";
+                java.sql.ResultSet rsOrd = stmt.executeQuery(query);
+                while (rsOrd.next()) {
+                            String status = rsOrd.getString("status");
+                            String urgency = "Regular";
+                    if (status.equals("Pending") || status.equals("Processing")) urgency = "Urgent";
 
-            // Default fallback if empty
-            if (orders.length === 0) {
-                orders = [
-                    { id: '#ORD-301', shop: 'Ramesh General Store', date: 'Today, 10:45 AM', items: 'Family Pack x 2 cartons', amount: 5280, status: 'Processing', urgency: 'Very Urgent' },
-                    { id: '#ORD-302', shop: 'Patel Kirana Shop', date: 'Today, 09:30 AM', items: 'Chocolate Cone x 5 cartons', amount: 3600, status: 'Pending', urgency: 'Regular' }
-                ];
-            }
+                    out.print("{ id: '#ORD-" + rsOrd.getInt("id") + "', shop: '" + rsOrd.getString("shop_name").replace("'", "\\'") + "', date: '" + rsOrd.getTimestamp("order_date") + "', items: 'Check Details', amount: '" + rsOrd.getBigDecimal("total_amount") + "', status: '" + status + "', urgency: '" + urgency + "' },");
+                }
+            } catch (Exception e) { e.printStackTrace(); }
+                %>
+            ];
 
             // Custom sort function to put Urgent/Very Urgent at the top if they are Pending or Processing
             orders.sort(function (a, b) {

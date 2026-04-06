@@ -36,23 +36,40 @@
                         </div>
                     </div>
 
-                    <!-- Stats -->
-                    <div class="grid grid-cols-3 gap-6 mb-8">
-                        <div class="bg-white p-5 rounded-2xl shadow hover:scale-105 transition">
-                            <p class="text-gray-400 text-sm">Total Customers</p>
-                            <p class="text-3xl font-black text-purple-700 mt-1">6</p>
+                    <!-- Dynamic Stats -->
+                    <% int totalCustomers=0; int activeThisMonth=0; int ordersThisMonth=0; try (java.sql.Connection
+                        conn=com.coolstack.util.DBConnection.getConnection(); java.sql.Statement
+                        stmt=conn.createStatement()) { java.sql.ResultSet rs=stmt.executeQuery("SELECT COUNT(*) FROM users WHERE role='customer'");
+                            if (rs.next()) totalCustomers = rs.getInt(1);
+                            
+                            rs = stmt.executeQuery(" SELECT COUNT(DISTINCT customer_id) FROM orders WHERE MONTH(order_date)=MONTH(CURRENT_DATE()) AND YEAR(order_date)=YEAR(CURRENT_DATE())");
+                            if(rs.next()) activeThisMonth=rs.getInt(1);
+                            rs=stmt.executeQuery("SELECT COUNT(*) FROM orders WHERE MONTH(order_date)=MONTH(CURRENT_DATE()) AND YEAR(order_date)=YEAR(CURRENT_DATE())");
+                            if(rs.next()) ordersThisMonth=rs.getInt(1); 
+                            } 
+                    catch (Exception e) { e.printStackTrace(); } %>
+                        <div class="grid grid-cols-3 gap-6 mb-8">
+                            <div class="bg-white p-5 rounded-2xl shadow hover:scale-105 transition">
+                                <p class="text-gray-400 text-sm">Total Customers</p>
+                                <p class="text-3xl font-black text-purple-700 mt-1">
+                                    <%= totalCustomers %>
+                                </p>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl shadow hover:scale-105 transition">
+                                <p class="text-gray-400 text-sm">Active This Month</p>
+                                <p class="text-3xl font-black text-green-600 mt-1">
+                                    <%= activeThisMonth %>
+                                </p>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl shadow hover:scale-105 transition">
+                                <p class="text-gray-400 text-sm">Total Orders This Month</p>
+                                <p class="text-3xl font-black text-indigo-600 mt-1">
+                                    <%= ordersThisMonth %>
+                                </p>
+                            </div>
                         </div>
-                        <div class="bg-white p-5 rounded-2xl shadow hover:scale-105 transition">
-                            <p class="text-gray-400 text-sm">Active This Month</p>
-                            <p class="text-3xl font-black text-green-600 mt-1">5</p>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl shadow hover:scale-105 transition">
-                            <p class="text-gray-400 text-sm">Total Orders This Month</p>
-                            <p class="text-3xl font-black text-indigo-600 mt-1">138</p>
-                        </div>
-                    </div>
 
-                    <div class="grid grid-cols-3 gap-6" id="customerGrid"></div>
+                        <div class="grid grid-cols-3 gap-6" id="customerGrid"></div>
                 </div>
         </div>
 
@@ -113,12 +130,15 @@
 
         <script>
             var customers = [
-                { key: 'cs_profile_cust1', name: 'Ramesh General Store', owner: 'Ramesh Patel', area: 'Village Khari, Dist. Anand', phone: '+91 94001 11111', email: 'ramesh@gmail.com', orders: 18, spend: '1,24,560', joined: 'Feb 2025' },
-                { key: 'cs_profile_cust2', name: 'Patel Kirana Shop', owner: 'Jayesh Patel', area: 'Nadiad, Kheda', phone: '+91 94001 22222', email: 'jayesh@gmail.com', orders: 24, spend: '1,89,000', joined: 'Jan 2025' },
-                { key: 'cs_profile_cust3', name: 'Sharma Cold Store', owner: 'Suresh Sharma', area: 'Anklav, Anand', phone: '+91 94001 33333', email: 'suresh@gmail.com', orders: 11, spend: '78,200', joined: 'Mar 2025' },
-                { key: 'cs_profile_cust4', name: 'Kumar Sweets', owner: 'Mohan Kumar', area: 'Borsad, Anand', phone: '+91 94001 44444', email: 'mohan@gmail.com', orders: 9, spend: '55,800', joined: 'Apr 2025' },
-                { key: 'cs_profile_cust5', name: 'Joshi Provisions', owner: 'Dinesh Joshi', area: 'Umreth, Anand', phone: '+91 94001 55555', email: 'dinesh@gmail.com', orders: 16, spend: '1,01,900', joined: 'Feb 2025' },
-                { key: 'cs_profile_cust6', name: 'Mehta Traders', owner: 'Nilesh Mehta', area: 'Petlad, Anand', phone: '+91 94001 66666', email: 'nilesh@gmail.com', orders: 7, spend: '42,000', joined: 'May 2025' }
+                <% 
+                    try (java.sql.Connection conn = com.coolstack.util.DBConnection.getConnection()) {
+                java.sql.Statement stmt = conn.createStatement();
+                java.sql.ResultSet rsCust = stmt.executeQuery("SELECT id, shop_name, name, address, phone, email FROM customers");
+                while (rsCust.next()) {
+                    out.print("{ key: 'db_customer_" + rsCust.getInt("id") + "', name: '" + rsCust.getString("shop_name").replace("'", "\\'") + "', owner: '" + rsCust.getString("name").replace("'", "\\'") + "', area: '" + rsCust.getString("address").replace("'", "\\'") + "', phone: '" + rsCust.getString("phone").replace("'", "\\'") + "', email: '" + rsCust.getString("email").replace("'", "\\'") + "', orders: 0, spend: '0', joined: 'Current' },");
+                }
+            } catch (Exception e) { e.printStackTrace(); }
+                %>
             ];
 
             var defaultCustSvg = 'data:image/svg+xml,%3Csvg xmlns%3D%22http%3A//www.w3.org/2000/svg%22 width%3D%22120%22 height%3D%22120%22 viewBox%3D%220 0 120 120%22%3E%3Ccircle cx%3D%2260%22 cy%3D%2260%22 r%3D%2260%22 fill%3D%22%23f3e8ff%22/%3E%3Ctext x%3D%2260%22 y%3D%2276%22 font-size%3D%2240%22 text-anchor%3D%22middle%22 fill%3D%22%239333ea%22%3E%F0%9F%8F%AA%3C/text%3E%3C/svg%3E';
