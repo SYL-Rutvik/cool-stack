@@ -33,6 +33,9 @@
                         <a href="dashboard.jsp"
                             class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-orange-600 transition font-semibold text-sm"><span>🏠</span>
                             My Orders</a>
+                        <a href="previous_orders.jsp"
+                            class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-orange-600 transition font-semibold text-sm"><span>📜</span>
+                            Previous Orders</a>
                         <a href="profile.jsp"
                             class="flex items-center gap-3 py-2.5 px-4 rounded-xl bg-orange-600 font-semibold text-sm"><span>👤</span>
                             My Profile</a>
@@ -55,20 +58,36 @@
                 </div>
                 <div class="grid grid-cols-3 gap-6">
                     <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center text-center">
-                        <div class="relative mb-4">
-                            <img id="photoPreview" src="" alt="Profile"
-                                class="w-36 h-36 rounded-full border-4 border-orange-100 shadow-md object-cover bg-gray-100">
+                        <% Integer userIdObj=(Integer) session.getAttribute("loggedUserId"); if (userIdObj==null) {
+                            response.sendRedirect(request.getContextPath() + "/login.jsp?error=Session Expired" );
+                            return; } int userId=userIdObj; String fullName=(String)
+                            session.getAttribute("loggedFullName"); String email=(String)
+                            session.getAttribute("loggedEmail"); String username=(String)
+                            session.getAttribute("loggedUsername"); String phone="" ; String profilePhoto=null; try
+                            (java.sql.Connection conn=com.coolstack.util.DBConnection.getConnection()) {
+                            java.sql.PreparedStatement ps=conn.prepareStatement("SELECT * FROM users WHERE id=?");
+                            ps.setInt(1, userId); java.sql.ResultSet rs=ps.executeQuery(); if (rs.next()) {
+                            email=rs.getString("email"); phone=rs.getString("phone");
+                            profilePhoto=rs.getString("profile_photo"); } } catch (Exception e) { e.printStackTrace(); }
+                            %>
+                            <div class="relative mb-4">
+                                <img id="photoPreview"
+                                    src="<%= (profilePhoto != null && !profilePhoto.isEmpty()) ? request.getContextPath() + "/" + profilePhoto : "../../assets/img/default-avatar.png" %>" alt="Profile"
+                                class="w-36 h-36 rounded-full border-4 border-orange-100 shadow-md object-cover
+                                bg-gray-100">
+                                <button onclick="document.getElementById('fileInput').click()"
+                                    class="absolute bottom-1 right-1 bg-orange-600 text-white w-9 h-9 rounded-full flex items-center justify-center text-lg shadow hover:bg-orange-800 transition">📷</button>
+                            </div>
+                            <input type="file" id="fileInput" accept="image/*" onchange="uploadPhoto(event)">
+                            <p class="font-black text-xl text-gray-800" id="displayName">
+                                <%= fullName %>
+                            </p>
+                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold mt-1">🛵
+                                Delivery Boy</span>
                             <button onclick="document.getElementById('fileInput').click()"
-                                class="absolute bottom-1 right-1 bg-orange-600 text-white w-9 h-9 rounded-full flex items-center justify-center text-lg shadow hover:bg-orange-800 transition">📷</button>
-                        </div>
-                        <input type="file" id="fileInput" accept="image/*" onchange="uploadPhoto(event)">
-                        <p class="font-black text-xl text-gray-800" id="displayName">Amit Singh</p>
-                        <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold mt-1">🛵
-                            Delivery Boy</span>
-                        <button onclick="document.getElementById('fileInput').click()"
-                            class="mt-4 w-full py-2 bg-orange-600 text-white rounded-xl font-semibold text-sm hover:bg-orange-800 transition">📷
-                            Change Photo</button>
-                        <p class="text-xs text-gray-400 mt-2">Photo visible to Admin in Manage Staff</p>
+                                class="mt-4 w-full py-2 bg-orange-600 text-white rounded-xl font-semibold text-sm hover:bg-orange-800 transition">📷
+                                Change Photo</button>
+                            <p class="text-xs text-gray-400 mt-2">Photo visible to Admin in Manage Staff</p>
                     </div>
                     <div class="col-span-2 bg-white rounded-2xl shadow-lg p-6">
                         <div class="flex justify-between items-center mb-6">
@@ -80,8 +99,10 @@
                         <div class="space-y-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div><label class="text-xs font-bold text-gray-400 uppercase">Full Name</label>
-                                    <p id="view-name" class="font-semibold text-gray-800 mt-0.5">Amit Singh</p><input
-                                        id="edit-name" type="text" value="Neha Singh"
+                                    <p id="view-name" class="font-semibold text-gray-800 mt-0.5">
+                                        <%= fullName %>
+                                    </p>
+                                    <input id="edit-name" type="text" value="<%= fullName %>"
                                         class="hidden w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-0.5 text-sm outline-none">
                                 </div>
                                 <div><label class="text-xs font-bold text-gray-400 uppercase">Role</label>
@@ -90,18 +111,24 @@
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div><label class="text-xs font-bold text-gray-400 uppercase">Email</label>
-                                    <p id="view-email" class="font-semibold text-gray-800 mt-0.5">amit@coolstock.in</p>
-                                    <input id="edit-email" type="email" value="neha@coolstock.in"
+                                    <p id="view-email" class="font-semibold text-gray-800 mt-0.5">
+                                        <%= email %>
+                                    </p>
+                                    <input id="edit-email" type="email" value="<%= email %>"
                                         class="hidden w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-0.5 text-sm outline-none">
                                 </div>
                                 <div><label class="text-xs font-bold text-gray-400 uppercase">Contact</label>
-                                    <p id="view-phone" class="font-semibold text-gray-800 mt-0.5">+91 98001 22222</p>
-                                    <input id="edit-phone" type="text" value="+91 98001 22222"
+                                    <p id="view-phone" class="font-semibold text-gray-800 mt-0.5">
+                                        <%= phone %>
+                                    </p>
+                                    <input id="edit-phone" type="text" value="<%= phone %>"
                                         class="hidden w-full border-2 border-gray-200 rounded-xl px-3 py-2 mt-0.5 text-sm outline-none">
                                 </div>
                             </div>
                             <div><label class="text-xs font-bold text-gray-400 uppercase">Username</label>
-                                <p class="font-semibold text-gray-800 mt-0.5">delivery</p>
+                                <p class="font-semibold text-gray-800 mt-0.5">
+                                    <%= username %>
+                                </p>
                             </div>
                         </div>
                         <button id="saveBtn" onclick="saveProfile()"
@@ -115,12 +142,12 @@
             </div>
         </div>
         <script>
-            const KEY = 'cs_profile_delivery';
-            function loadProfile() { const d = JSON.parse(localStorage.getItem(KEY) || '{}'); if (d.photo) document.getElementById('photoPreview').src = d.photo; if (d.name) { document.getElementById('view-name').innerText = d.name; document.getElementById('edit-name').value = d.name; document.getElementById('displayName').innerText = d.name; } if (d.email) { document.getElementById('view-email').innerText = d.email; document.getElementById('edit-email').value = d.email; } if (d.phone) { document.getElementById('view-phone').innerText = d.phone; document.getElementById('edit-phone').value = d.phone; } }
             function toggleEdit() { const e = !document.getElementById('saveBtn').classList.contains('hidden');['name', 'email', 'phone'].forEach(f => { document.getElementById('view-' + f).classList.toggle('hidden', !e); document.getElementById('edit-' + f).classList.toggle('hidden', e); }); document.getElementById('saveBtn').classList.toggle('hidden'); document.getElementById('editBtn').innerText = e ? '✏️ Edit Profile' : '✖ Cancel'; }
-            function saveProfile() { const d = JSON.parse(localStorage.getItem(KEY) || '{}');['name', 'email', 'phone'].forEach(f => { d[f] = document.getElementById('edit-' + f).value; }); localStorage.setItem(KEY, JSON.stringify(d)); document.getElementById('view-name').innerText = d.name; document.getElementById('view-email').innerText = d.email; document.getElementById('view-phone').innerText = d.phone; document.getElementById('displayName').innerText = d.name; toggleEdit(); document.getElementById('savedMsg').classList.remove('hidden'); setTimeout(() => document.getElementById('savedMsg').classList.add('hidden'), 3000); }
-            function uploadPhoto(e) { const r = new FileReader(); r.onload = ev => { document.getElementById('photoPreview').src = ev.target.result; const d = JSON.parse(localStorage.getItem(KEY) || '{}'); d.photo = ev.target.result; localStorage.setItem(KEY, JSON.stringify(d)); }; r.readAsDataURL(e.target.files[0]); }
-            loadProfile();
+            function saveProfile() {
+                // Placeholder for profile update logic
+                toggleEdit(); document.getElementById('savedMsg').classList.remove('hidden'); setTimeout(() => document.getElementById('savedMsg').classList.add('hidden'), 3000);
+            }
+            function uploadPhoto(e) { /* Placeholder for photo upload logic */ }
         </script>
     </body>
 

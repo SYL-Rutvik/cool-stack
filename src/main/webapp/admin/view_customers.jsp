@@ -37,17 +37,24 @@
                     </div>
 
                     <!-- Dynamic Stats -->
-                    <% int totalCustomers=0; int activeThisMonth=0; int ordersThisMonth=0; try (java.sql.Connection
-                        conn=com.coolstack.util.DBConnection.getConnection(); java.sql.Statement
-                        stmt=conn.createStatement()) { java.sql.ResultSet rs=stmt.executeQuery("SELECT COUNT(*) FROM users WHERE role='customer'");
+                    <% int totalCustomers=0;
+                    int activeThisMonth=0;
+                    int ordersThisMonth=0;
+                    try (
+                    		java.sql.Connection conn=com.coolstack.util.DBConnection.getConnection();
+                    		java.sql.Statement stmt=conn.createStatement()) 
+                    { java.sql.ResultSet rs=stmt.executeQuery("SELECT COUNT(*) FROM users WHERE role='customer'");
                             if (rs.next()) totalCustomers = rs.getInt(1);
-                            
                             rs = stmt.executeQuery(" SELECT COUNT(DISTINCT customer_id) FROM orders WHERE MONTH(order_date)=MONTH(CURRENT_DATE()) AND YEAR(order_date)=YEAR(CURRENT_DATE())");
-                            if(rs.next()) activeThisMonth=rs.getInt(1);
-                            rs=stmt.executeQuery("SELECT COUNT(*) FROM orders WHERE MONTH(order_date)=MONTH(CURRENT_DATE()) AND YEAR(order_date)=YEAR(CURRENT_DATE())");
-                            if(rs.next()) ordersThisMonth=rs.getInt(1); 
-                            } 
-                    catch (Exception e) { e.printStackTrace(); } %>
+                        if(rs.next()) 
+                        	activeThisMonth=rs.getInt(1); 
+                        rs=stmt.executeQuery("SELECT COUNT(*) FROM orders WHERE MONTH(order_date)=MONTH(CURRENT_DATE()) AND YEAR(order_date)=YEAR(CURRENT_DATE())");
+                        if(rs.next()) 
+                        	ordersThisMonth=rs.getInt(1);
+                        } 
+                    catch (Exception e) { 
+                    	e.printStackTrace(); 
+                    	} %>
                         <div class="grid grid-cols-3 gap-6 mb-8">
                             <div class="bg-white p-5 rounded-2xl shadow hover:scale-105 transition">
                                 <p class="text-gray-400 text-sm">Total Customers</p>
@@ -200,29 +207,42 @@
             }
             function handleAddCustomer(e) {
                 e.preventDefault();
-                var name = document.getElementById('custName').value;
-                var owner = document.getElementById('custOwner').value;
+                var name = document.getElementById('custOwner').value;
+                var shopName = document.getElementById('custName').value;
                 var phone = document.getElementById('custPhone').value;
-                var area = document.getElementById('custArea').value;
-                var email = document.getElementById('custEmail').value || 'N/A';
+                var address = document.getElementById('custArea').value;
+                var email = document.getElementById('custEmail').value || '';
                 var password = document.getElementById('custPassword').value;
 
-                var newCust = {
-                    key: 'cs_profile_cust_' + Date.now(),
-                    name: name,
-                    owner: owner,
-                    area: area,
-                    phone: phone,
-                    email: email,
-                    orders: 0,
-                    spend: '0',
-                    joined: 'Today'
-                };
+                var formData = new URLSearchParams();
+                formData.append('action', 'addCustomer');
+                formData.append('name', name);
+                formData.append('shopName', shopName);
+                formData.append('phone', phone);
+                formData.append('address', address);
+                formData.append('email', email);
+                formData.append('password', password);
 
-                customers.unshift(newCust);
-                buildCustomerCards(customers);
-                filterCustomers();
-                closeCustomerModal();
+                fetch('../addUser', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Customer added successfully!');
+                            location.reload(); // Reload to see the new customer from DB
+                        } else {
+                            alert('Error adding customer: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred. Check the console for details.');
+                    });
             }
 
             buildCustomerCards(customers);

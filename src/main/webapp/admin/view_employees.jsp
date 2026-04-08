@@ -192,28 +192,34 @@
                 var email = document.getElementById('staffEmail').value;
                 var password = document.getElementById('staffPassword').value;
 
-                var badges = {
-                    'Manager': 'bg-indigo-100 text-indigo-700',
-                    'Cashier': 'bg-emerald-100 text-emerald-700',
-                    'Delivery': 'bg-orange-100 text-orange-700'
-                };
+                var formData = new URLSearchParams();
+                formData.append('action', 'addEmployee');
+                formData.append('name', name);
+                formData.append('role', role);
+                formData.append('phone', phone);
+                formData.append('email', email);
+                formData.append('password', password);
 
-                var newStaff = {
-                    key: 'cs_profile_new_' + Date.now(),
-                    name: name,
-                    role: role,
-                    roleIcon: role.charAt(0),
-                    email: email,
-                    phone: phone,
-                    joined: 'Today',
-                    orders: 0,
-                    badge: badges[role]
-                };
-
-                staffList.unshift(newStaff);
-                buildStaffCards(staffList);
-                filterStaff();
-                closeStaffModal();
+                fetch('../addUser', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Employee added successfully!');
+                            location.reload();
+                        } else {
+                            alert('Error adding employee: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred. Check the console for details.');
+                    });
             }
 
             buildStaffCards(staffList);

@@ -31,6 +31,9 @@
                         <a href="dashboard.jsp"
                             class="flex items-center gap-3 py-2.5 px-4 rounded-xl bg-orange-600 font-semibold text-sm"><span>🏠</span>
                             My Orders</a>
+                        <a href="previous_orders.jsp"
+                            class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-orange-600 transition font-semibold text-sm"><span>📜</span>
+                            Previous Orders</a>
                         <a href="profile.jsp"
                             class="flex items-center gap-3 py-2.5 px-4 rounded-xl hover:bg-orange-600 transition font-semibold text-sm"><span>👤</span>
                             My Profile</a>
@@ -58,130 +61,228 @@
                     </div>
                 </div>
 
-                <!-- Stats -->
-                <div class="grid grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
-                        <p class="text-gray-400 text-sm">Assigned to Me</p>
-                        <p class="text-3xl font-black text-orange-500 mt-2">4</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
-                        <p class="text-gray-400 text-sm">Delivered</p>
-                        <p class="text-3xl font-black text-green-600 mt-2" id="deliveredCount">1</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
-                        <p class="text-gray-400 text-sm">In Transit</p>
-                        <p class="text-3xl font-black text-blue-600 mt-2" id="transitCount">1</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition border-2 border-red-200">
-                        <p class="text-red-500 text-sm font-semibold">Cash to Deposit</p>
-                        <p class="text-3xl font-black text-red-600 mt-2" id="cashCount">0</p>
-                        <p class="text-red-400 text-xs mt-1">Give to Cashier</p>
-                    </div>
-                </div>
+                <% Integer deliveryBoyIdObj=(Integer) session.getAttribute("loggedUserId"); if (deliveryBoyIdObj==null)
+                    { response.sendRedirect(request.getContextPath()
+                    + "/login.jsp?error=Session Expired, Please Login Again" ); return; } int
+                    deliveryBoyId=deliveryBoyIdObj; int assignedMe=0, deliveredCount=0, transitCount=0;
+                    java.math.BigDecimal cashToDeposit=java.math.BigDecimal.ZERO; java.util.List<String[]>
+                    assignedOrders = new java.util.ArrayList<>();
+                        java.util.List<String[]> cashDepositList = new java.util.ArrayList<>();
+                                java.util.List<String[]> cashierList = new java.util.ArrayList<>();
 
-                <!-- ASSIGNED ORDERS -->
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-                    <div class="p-6 border-b bg-orange-50">
-                        <h2 class="text-xl font-bold text-gray-800">📋 My Assigned Orders</h2>
-                        <p class="text-gray-400 text-sm mt-0.5">Pick up, deliver, and mark each order complete</p>
-                    </div>
-                    <div class="p-6 space-y-4">
+                                        try (java.sql.Connection conn = com.coolstack.util.DBConnection.getConnection())
+                                        {
+                                        // Stats queries
+                                        java.sql.PreparedStatement st1 = conn.prepareStatement("SELECT COUNT(*) FROM orders WHERE delivery_boy_id = ? AND status != 'Paid' AND status != 'Cancelled'");
+                                        st1.setInt(1, deliveryBoyId);
+                                        java.sql.ResultSet rs1 = st1.executeQuery();
+                                        if(rs1.next()) assignedMe = rs1.getInt(1);
 
-                        <!-- Order: Assigned (not started) -->
-                        <div class="border-2 border-gray-100 rounded-2xl p-5" id="dord-301">
-                            <div class="flex justify-between items-start gap-4">
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="font-black text-lg text-gray-800">#ORD-301</span>
-                                        <span
-                                            class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full"
-                                            id="status-dord-301">Assigned</span>
-                                    </div>
-                                    <p class="text-sm text-gray-600">🏪 <strong>Ramesh General Store</strong> — Village
-                                        Khari, Dist. Anand</p>
-                                    <p class="text-sm text-gray-500 mt-1">📦 Chocolate Cone × 5, Vanilla Cone × 3
-                                        cartons</p>
-                                    <p class="text-sm font-bold text-indigo-600 mt-1">💰 Collect: ₹7,560 (Cash on
-                                        Delivery)</p>
-                                </div>
-                                <div class="flex flex-col gap-2 min-w-[160px]">
-                                    <button id="btn-dord-301" onclick="startDelivery('dord-301', '₹7,560')"
-                                        class="bg-orange-500 text-white py-2 px-4 rounded-xl font-bold text-sm hover:bg-orange-600 transition">
-                                        🚀 Start Delivery
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                                        java.sql.PreparedStatement st2 = conn.prepareStatement("SELECT COUNT(*) FROM orders WHERE delivery_boy_id = ? AND status = 'Delivered'");
+                                        st2.setInt(1, deliveryBoyId);
+                                        java.sql.ResultSet rs2 = st2.executeQuery();
+                                        if(rs2.next()) deliveredCount = rs2.getInt(1);
 
-                        <!-- Order: In Transit -->
-                        <div class="border-2 border-blue-200 rounded-2xl p-5 bg-blue-50" id="dord-298">
-                            <div class="flex justify-between items-start gap-4">
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="font-black text-lg text-gray-800">#ORD-298</span>
-                                        <span
-                                            class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full"
-                                            id="status-dord-298">In Transit 🛵</span>
-                                    </div>
-                                    <p class="text-sm text-gray-600">🏪 <strong>Mehta Traders</strong> — Nadiad, Kheda
-                                    </p>
-                                    <p class="text-sm text-gray-500 mt-1">📦 Mango Shake × 7, Family Pack × 1 case</p>
-                                    <p class="text-sm font-bold text-indigo-600 mt-1">💰 Collect: ₹9,200 (Cash on
-                                        Delivery)</p>
-                                </div>
-                                <div class="flex flex-col gap-2 min-w-[160px]">
-                                    <button id="btn-dord-298" onclick="markDelivered('dord-298', '₹9,200')"
-                                        class="bg-green-500 text-white py-2 px-4 rounded-xl font-bold text-sm hover:bg-green-600 transition">
-                                        ✅ Mark Delivered
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                                        java.sql.PreparedStatement st3 = conn.prepareStatement("SELECT COUNT(*) FROM orders WHERE delivery_boy_id = ? AND status = 'Out for Delivery'");
+                                        st3.setInt(1, deliveryBoyId);
+                                        java.sql.ResultSet rs3 = st3.executeQuery();
+                                        if(rs3.next()) transitCount = rs3.getInt(1);
 
-                        <!-- Order: Delivered -->
-                        <div class="border-2 border-green-200 rounded-2xl p-5 bg-green-50" id="dord-295">
-                            <div class="flex justify-between items-start gap-4">
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="font-black text-lg text-gray-800">#ORD-295</span>
-                                        <span
-                                            class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">Delivered
-                                            ✅</span>
-                                    </div>
-                                    <p class="text-sm text-gray-600">🏪 <strong>Patel Kirana</strong> — Anklav, Anand
-                                    </p>
-                                    <p class="text-sm text-gray-500 mt-1">📦 Strawberry Cup × 10 cartons</p>
-                                    <p class="text-sm font-bold text-green-600 mt-1">💰 Collected: ₹6,000 — Deposit to
-                                        Cashier</p>
-                                </div>
-                                <div class="min-w-[160px]">
-                                    <span class="text-green-600 font-semibold text-sm">Cash collected ✓</span>
-                                </div>
-                            </div>
-                        </div>
+                                        java.sql.PreparedStatement st4 = conn.prepareStatement("SELECT SUM(total_amount) FROM orders WHERE delivery_boy_id = ? AND status = 'Delivered'");
+                                        st4.setInt(1, deliveryBoyId);
+                                        java.sql.ResultSet rs4 = st4.executeQuery();
+                                        if(rs4.next()) cashToDeposit = rs4.getBigDecimal(1) != null ?
+                                        rs4.getBigDecimal(1) : java.math.BigDecimal.ZERO;
 
-                    </div>
-                </div>
+                                        // Fetch orders list
+                                        java.sql.PreparedStatement stO = conn.prepareStatement("SELECT o.id, o.status,o.total_amount, c.shop_name, c.address FROM orders o JOIN customers c ON o.customer_id = c.id WHERE o.delivery_boy_id = ? AND o.status != 'Paid' AND o.status != 'Cancelled' ORDER BY o.id DESC");
+                                        stO.setInt(1, deliveryBoyId);
+                                        java.sql.ResultSet rsO = stO.executeQuery();
+                                        while(rsO.next()) {
+                                        assignedOrders.add(new String[]{String.valueOf(rsO.getInt("id")),
+                                        rsO.getString("status"), String.valueOf(rsO.getBigDecimal("total_amount")),
+                                        rsO.getString("shop_name"), rsO.getString("address")});
+                                        if("Delivered".equals(rsO.getString("status"))) {
+                                        cashDepositList.add(new String[]{String.valueOf(rsO.getInt("id")),
+                                        String.valueOf(rsO.getBigDecimal("total_amount"))});
+                                        }
+                                        }
 
-                <!-- PENDING CASH TO DEPOSIT -->
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-red-100">
-                    <div class="p-6 border-b bg-red-50 flex justify-between items-center">
-                        <div>
-                            <h2 class="text-xl font-bold text-red-700">💰 Pending Cash to Deposit to Cashier</h2>
-                            <p class="text-gray-400 text-sm mt-0.5">Hand over all collected cash and click "Cash
-                                Deposited"</p>
-                        </div>
-                        <span class="bg-red-500 text-white text-sm font-bold px-4 py-1.5 rounded-full" id="cashBadge">0
-                            Pending</span>
-                    </div>
-                    <div class="p-6">
-                        <div id="cashList" class="space-y-3"></div>
-                        <div id="noCash" class="text-center py-8 text-gray-400">
-                            <div class="text-4xl mb-2">💼</div>
-                            <p class="font-semibold">No cash pending. Deliver orders first!</p>
-                        </div>
-                    </div>
-                </div>
+                                        // Fetch Cashiers
+                                        java.sql.ResultSet rsC = conn.createStatement().executeQuery("SELECT id, name FROM cashiers");
+                                        while(rsC.next()) {
+                                        cashierList.add(new String[]{String.valueOf(rsC.getInt("id")),
+                                        rsC.getString("name")});
+                                        }
+                                        } catch (Exception e) { e.printStackTrace(); }
+                                        %>
+
+                                        <!-- Stats -->
+                                        <div class="grid grid-cols-4 gap-6 mb-8">
+                                            <div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
+                                                <p class="text-gray-400 text-sm">Assigned to Me</p>
+                                                <p class="text-3xl font-black text-orange-500 mt-2">
+                                                    <%= assignedMe %>
+                                                </p>
+                                            </div>
+                                            <div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
+                                                <p class="text-gray-400 text-sm">Delivered</p>
+                                                <p class="text-3xl font-black text-green-600 mt-2" id="deliveredCount">
+                                                    <%= deliveredCount %>
+                                                </p>
+                                            </div>
+                                            <div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
+                                                <p class="text-gray-400 text-sm">In Transit</p>
+                                                <p class="text-3xl font-black text-blue-600 mt-2" id="transitCount">
+                                                    <%= transitCount %>
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition border-2 border-red-200">
+                                                <p class="text-red-500 text-sm font-semibold">Cash to Deposit</p>
+                                                <p class="text-3xl font-black text-red-600 mt-2" id="cashCount">₹<%=
+                                                        cashToDeposit %>
+                                                </p>
+                                                <p class="text-red-400 text-xs mt-1">Give to Cashier</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- ASSIGNED ORDERS -->
+                                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+                                            <div class="p-6 border-b bg-orange-50">
+                                                <h2 class="text-xl font-bold text-gray-800">📋 My Assigned Orders</h2>
+                                                <p class="text-gray-400 text-sm mt-0.5">Pick up, deliver, and mark each
+                                                    order complete</p>
+                                            </div>
+                                            <div class="p-6 space-y-4">
+
+                                                <% if (assignedOrders.isEmpty()) { %>
+                                                    <div class="p-10 text-center text-gray-400">
+                                                        <div class="text-5xl mb-3">🎉</div>
+                                                        <p class="font-semibold text-lg">No assigned orders right now!
+                                                        </p>
+                                                    </div>
+                                                    <% } %>
+
+                                                        <% for(String[] o : assignedOrders) { String status=o[1]; String
+                                                            borderClass="border-gray-100" ; String bgClass="" ; String
+                                                            statusBadgeClass="bg-gray-100 text-gray-600" ; if ("Out for Delivery".equals(status)) { borderClass="border-blue-200" ;
+                                                            bgClass="bg-blue-50" ;
+                                                            statusBadgeClass="bg-blue-100 text-blue-700" ; } else
+                                                            if("Delivered".equals(status)) {
+                                                            borderClass="border-green-200" ; bgClass="bg-green-50" ;
+                                                            statusBadgeClass="bg-green-100 text-green-700" ; } %>
+                                                            <div class="border-2 <%= borderClass %> rounded-2xl p-5 <%= bgClass %>"
+                                                                id="dord-<%= o[0] %>">
+                                                                <div class="flex justify-between items-start gap-4">
+                                                                    <div>
+                                                                        <div class="flex items-center gap-2 mb-1">
+                                                                            <span
+                                                                                class="font-black text-lg text-gray-800">#ORD-
+                                                                                <%= o[0] %>
+                                                                            </span>
+                                                                            <span
+                                                                                class="<%= statusBadgeClass %> text-xs font-bold px-2 py-0.5 rounded-full"
+                                                                                id="status-dord-<%= o[0] %>">
+                                                                                <%= status %>
+                                                                                    <%= "Out for Delivery"
+                                                                                        .equals(status) ? "🛵" :
+                                                                                        ("Delivered".equals(status)
+                                                                                        ? "✅" : "" ) %>
+                                                                            </span>
+                                                                        </div>
+                                                                        <p class="text-sm text-gray-600">🏪 <strong>
+                                                                                <%= o[3] %>
+                                                                            </strong> — <%= o[4] %>
+                                                                        </p>
+                                                                        <p
+                                                                            class="text-sm font-bold text-indigo-600 mt-1">
+                                                                            💰 Collect: ₹<%= o[2] %>
+                                                                        </p>
+                                                                    </div>
+                                                                    <div class="flex flex-col gap-2 min-w-[160px]">
+                                                                        <% if ("Processing".equals(status)) { %>
+                                                                            <button id="btn-dord-<%= o[0] %>"
+                                                                                onclick="startDelivery('<%= o[0] %>')"
+                                                                                class="bg-orange-500 text-white py-2 px-4 rounded-xl font-bold text-sm hover:bg-orange-600 transition">
+                                                                                🚀 Start Delivery
+                                                                            </button>
+                                                                            <% } else if ("Out for Delivery".equals(status)) { %>
+                                                                                <button id="btn-dord-<%= o[0] %>"
+                                                                                    onclick="markDelivered('<%= o[0] %>')"
+                                                                                    class="bg-green-500 text-white py-2 px-4 rounded-xl font-bold text-sm hover:bg-green-600 transition">
+                                                                                    ✅ Mark Delivered
+                                                                                </button>
+                                                                                <% } else if
+                                                                                    ("Delivered".equals(status)) { %>
+                                                                                    <span
+                                                                                        class="text-green-600 font-semibold text-sm">✓
+                                                                                        Delivered</span>
+                                                                                    <% } %>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <% } %>
+
+                                            </div>
+                                        </div>
+
+                                        <!-- PENDING CASH TO DEPOSIT -->
+                                        <div
+                                            class="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-red-100">
+                                            <div class="p-6 border-b bg-red-50 flex justify-between items-center">
+                                                <div>
+                                                    <h2 class="text-xl font-bold text-red-700">💰 Pending Cash to
+                                                        Deposit to Cashier</h2>
+                                                    <p class="text-gray-400 text-sm mt-0.5">Hand over all collected cash
+                                                        and click "Cash
+                                                        Deposited"</p>
+                                                </div>
+                                                <span
+                                                    class="bg-red-500 text-white text-sm font-bold px-4 py-1.5 rounded-full"
+                                                    id="cashBadge">
+                                                    <%= cashDepositList.size() %>
+                                                        Pending
+                                                </span>
+                                            </div>
+                                            <div class="p-6">
+                                                <div id="cashList" class="space-y-3">
+                                                    <% for(String[] c : cashDepositList) { %>
+                                                        <div class="flex justify-between items-center bg-red-50 border border-red-200 rounded-xl p-4"
+                                                            id="cash-item-<%= c[0] %>">
+                                                            <div>
+                                                                <p class="font-bold text-gray-800">#ORD-<%= c[0] %>
+                                                                </p>
+                                                                <p class="text-red-600 font-black text-lg">₹<%= c[1] %>
+                                                                        to deposit</p>
+                                                            </div>
+                                                            <div class="flex gap-2">
+                                                                <select id="cashier-<%= c[0] %>"
+                                                                    class="border p-2 rounded-xl text-sm outline-none">
+                                                                    <option value="">— Select Cashier —</option>
+                                                                    <% for(String[] cashier : cashierList) { %>
+                                                                        <option value="<%= cashier[0] %>">
+                                                                            <%= cashier[1] %>
+                                                                        </option>
+                                                                        <% } %>
+                                                                </select>
+                                                                <button onclick="depositCash('<%= c[0] %>')"
+                                                                    class="bg-red-500 text-white px-5 py-2 rounded-xl font-bold hover:bg-red-600 transition text-sm">
+                                                                    💵 Cash Deposited
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <% } %>
+                                                </div>
+                                                <% if (cashDepositList.isEmpty()) { %>
+                                                    <div id="noCash" class="text-center py-8 text-gray-400">
+                                                        <div class="text-4xl mb-2">💼</div>
+                                                        <p class="font-semibold">No cash pending. Deliver orders first!
+                                                        </p>
+                                                    </div>
+                                                    <% } %>
+                                            </div>
+                                        </div>
 
             </div>
         </div>
@@ -199,65 +300,69 @@
                 const t = document.getElementById('toast');
                 t.className = `fixed bottom-6 right-6 text-white px-6 py-3 rounded-2xl shadow-2xl font-semibold z-50 ${color}`;
                 t.innerText = msg;
+                t.classList.remove('hidden');
                 setTimeout(() => t.classList.add('hidden'), 3500);
             }
 
-            function startDelivery(id, amount) {
-                document.getElementById(id).className = 'border-2 border-blue-200 rounded-2xl p-5 bg-blue-50';
-                document.getElementById('status-' + id).innerHTML = 'In Transit 🛵';
-                document.getElementById('status-' + id).className = 'bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full';
-                const btn = document.getElementById('btn-' + id);
-                btn.innerText = '✅ Mark Delivered';
-                btn.className = 'bg-green-500 text-white py-2 px-4 rounded-xl font-bold text-sm hover:bg-green-600 transition';
-                btn.setAttribute('onclick', `markDelivered('${id}', '${amount}')`);
-                transitCount++;
-                document.getElementById('transitCount').innerText = transitCount;
-                showToast('🛵 Delivery started!');
+            function startDelivery(orderId) {
+                fetch('<%=request.getContextPath()%>/DeliveryServlet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'action=start&orderId=' + encodeURIComponent(orderId)
+                }).then(async response => {
+                    if (response.ok) {
+                        showToast('🛵 Delivery started!');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        const errorMsg = await response.text();
+                        alert("Error starting delivery: " + errorMsg);
+                    }
+                }).catch(err => alert("Network Error: " + err));
             }
 
-            function markDelivered(id, amount) {
-                document.getElementById(id).className = 'border-2 border-green-200 rounded-2xl p-5 bg-green-50';
-                document.getElementById('status-' + id + '') && (document.getElementById('status-' + id).innerHTML = 'Delivered ✅');
-                document.getElementById('btn-' + id).outerHTML = '<span class="text-green-600 font-semibold text-sm">✓ Delivered</span>';
-                deliveredCount++;
-                document.getElementById('deliveredCount').innerText = deliveredCount;
-
-                // Add to cash deposit list
-                cashItems.push({ id, amount });
-                document.getElementById('cashCount').innerText = cashItems.length;
-                document.getElementById('cashBadge').innerText = cashItems.length + ' Pending';
-                document.getElementById('noCash').classList.add('hidden');
-
-                const div = document.createElement('div');
-                div.className = 'flex justify-between items-center bg-red-50 border border-red-200 rounded-xl p-4';
-                div.id = 'cash-' + id;
-                div.innerHTML = `
-        <div>
-            <p class="font-bold text-gray-800">${id.replace('dord', '#ORD-')}</p>
-            <p class="text-red-600 font-black text-lg">${amount} to deposit</p>
-        </div>
-        <button onclick="depositCash('cash-${id}')"
-            class="bg-red-500 text-white px-5 py-2 rounded-xl font-bold hover:bg-red-600 transition text-sm">
-            💵 Cash Deposited to Cashier
-        </button>
-    `;
-                document.getElementById('cashList').appendChild(div);
-                showToast('✅ Order marked as Delivered! Deposit cash to Cashier.', 'bg-green-500');
+            function markDelivered(orderId) {
+                fetch('<%=request.getContextPath()%>/DeliveryServlet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'action=deliver&orderId=' + encodeURIComponent(orderId)
+                }).then(async response => {
+                    if (response.ok) {
+                        showToast('✅ Order marked as Delivered!', 'bg-green-500');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        const errorMsg = await response.text();
+                        alert("Error marking as delivered: " + errorMsg);
+                    }
+                }).catch(err => alert("Network Error: " + err));
             }
 
-            function depositCash(divId) {
-                document.getElementById(divId).remove();
-                cashItems.pop();
-                document.getElementById('cashCount').innerText = cashItems.length;
-                document.getElementById('cashBadge').innerText = cashItems.length + ' Pending';
-                if (cashItems.length === 0) document.getElementById('noCash').classList.remove('hidden');
-                showToast('💰 Cash deposited to Cashier! Invoice will be generated.', 'bg-blue-500');
+            function depositCash(orderId) {
+                const cashierId = document.getElementById('cashier-' + orderId).value;
+                if (!cashierId) {
+                    alert("Please select a cashier first!");
+                    return;
+                }
+                fetch('<%=request.getContextPath()%>/DeliveryServlet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'action=deposit&orderId=' + encodeURIComponent(orderId) + '&cashierId=' + encodeURIComponent(cashierId)
+                }).then(async response => {
+                    if (response.ok) {
+                        showToast('💰 Cash deposited to Cashier!', 'bg-blue-500');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        const errorMsg = await response.text();
+                        alert("Error depositing cash: " + errorMsg);
+                    }
+                }).catch(err => alert("Network Error: " + err));
             }
 
             setInterval(() => {
                 const now = new Date();
-                document.getElementById('liveClock').innerText = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
-                document.getElementById('liveDate').innerText = now.toDateString();
+                const clock = document.getElementById('liveClock');
+                if (clock) clock.innerText = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+                const date = document.getElementById('liveDate');
+                if (date) date.innerText = now.toDateString();
             }, 1000);
         </script>
     </body>

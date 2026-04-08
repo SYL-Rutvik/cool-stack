@@ -38,7 +38,8 @@
                         java.util.ArrayList<>();
                             try (java.sql.Connection conn=com.coolstack.util.DBConnection.getConnection();
                             java.sql.Statement stmt=conn.createStatement()) {
-                            java.sql.ResultSet rs=stmt.executeQuery("select count(*) from orders where status='Pending'" );
+                            java.sql.ResultSet rs=stmt.executeQuery("select count(*) from orders where status='Pending'"
+                            );
                             if(rs.next()) tNew=rs.getInt(1);
                             rs=stmt.executeQuery( "SELECT COUNT(*) FROM orders WHERE status='Processing' OR status='Shipped' OR status='Out for Delivery'" );
                             if(rs.next()) tAsn=rs.getInt(1);
@@ -96,7 +97,7 @@
                                     </div>
                                     <span class="bg-gray-500 text-white text-sm font-bold px-4 py-1.5 rounded-full"
                                         id="pendingBadge">
-                                        Will Auto-populate
+                                        <%= tNew %> Unassigned
                                     </span>
                                 </div>
 
@@ -184,8 +185,9 @@
                                         <% try (java.sql.Connection
                                             conn=com.coolstack.util.DBConnection.getConnection(); java.sql.Statement
                                             stmt=conn.createStatement(); java.sql.ResultSet
-                                            rs=stmt.executeQuery( "SELECT o.id, c.shop_name, o.total_amount, o.status "
+                                            rs=stmt.executeQuery( "SELECT o.id, c.shop_name, o.total_amount, o.status, u.name as delivery_boy_name "
                                             + "FROM orders o JOIN customers c ON o.customer_id = c.id "
+                                            + "LEFT JOIN users u ON o.delivery_boy_id = u.id "
                                             + "WHERE o.status IN ('Processing', 'Shipped', 'Out for Delivery')" )) {
                                             while(rs.next()) { %>
                                             <tr class="border-b hover:bg-gray-50">
@@ -197,7 +199,9 @@
                                                 <td class="px-6 font-semibold text-indigo-600">₹<%=
                                                         rs.getBigDecimal("total_amount") %>
                                                 </td>
-                                                <td class="px-6">🛵 Auto Assigned</td>
+                                                <td class="px-6">🛵 <%= rs.getString("delivery_boy_name") !=null ?
+                                                        rs.getString("delivery_boy_name") : "Not Assigned" %>
+                                                </td>
                                                 <td class="px-6"><span
                                                         class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">
                                                         <%= rs.getString("status") %>
@@ -221,8 +225,12 @@
             function assignOrder(cardId, orderId, selectId) {
                 const sel = document.getElementById(selectId);
                 const deliveryBoyId = sel.value;
-                const deliveryBoyName = sel.options[sel.selectedIndex].text;
+                const deliveryBoyName = sel.options[sel.selectedIndex].text.replace('🛵 ', '');
                 if (!deliveryBoyId) { alert('Please select a Delivery Boy first!'); return; }
+
+                const card = document.getElementById(cardId);
+                const shopName = card.querySelector('.font-semibold').innerText;
+                const totalAmt = card.querySelector('.text-indigo-600').innerText.replace('💰 Total: ', '');
 
                 if (pendingCount === -1) {
                     pendingCount = document.querySelectorAll("[id^='order-']").length;
@@ -237,7 +245,7 @@
                 }).then(response => {
                     if (response.ok) {
                         // Hide the pending card
-                        document.getElementById(cardId).style.display = 'none';
+                        card.style.display = 'none';
                         pendingCount--;
                         document.getElementById('stat-new').innerText = pendingCount;
                         document.getElementById('pendingBadge').innerText = pendingCount + ' Unassigned';
@@ -249,8 +257,9 @@
                         row.className = 'border-b hover:bg-gray-50 bg-green-50';
                         row.innerHTML = `
                             <td class="py-3 px-6 font-bold">${orderId}</td>
-                            <td class="px-6">—</td><td class="px-6 font-semibold text-indigo-600">—</td>
-                            <td class="px-6">${deliveryBoyName}</td>
+                            <td class="px-6">${shopName}</td>
+                            <td class="px-6 font-semibold text-indigo-600">${totalAmt}</td>
+                            <td class="px-6">🛵 ${deliveryBoyName}</td>
                             <td class="px-6"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">Processing</span></td>
                         `;
                         tbody.prepend(row);

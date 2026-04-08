@@ -32,6 +32,24 @@ public class CustomerDAO {
         return customer;
     }
 
+    public boolean addCustomerProfile(int userId, String name, String shopName, String email, String phone, String address) {
+        try (Connection conn = DBConnection.getConnection()) {
+            if (conn != null) {
+                // Insert into customers_details table (underlying table for customers view)
+                String sql = "INSERT INTO customers_details (user_id, shop_name, address) VALUES (?, ?, ?)";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setInt(1, userId);
+                ps.setString(2, shopName);
+                ps.setString(3, address);
+                
+                return ps.executeUpdate() > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean updateCustomer(Customer customer) {
         try (Connection conn = DBConnection.getConnection()) {
             if (conn != null) {

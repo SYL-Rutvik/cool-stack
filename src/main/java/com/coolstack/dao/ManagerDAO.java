@@ -30,6 +30,22 @@ public class ManagerDAO {
         return manager;
     }
 
+    public boolean addManagerProfile(int userId, String name, String email, String phone) {
+        try (Connection conn = DBConnection.getConnection()) {
+            if (conn != null) {
+                // Insert into managers_details table (underlying table for managers view)
+                String sql = "INSERT INTO managers_details (user_id) VALUES (?)";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setInt(1, userId);
+                
+                return ps.executeUpdate() > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean updateManager(Manager manager) {
         try (Connection conn = DBConnection.getConnection()) {
             if (conn != null) {
