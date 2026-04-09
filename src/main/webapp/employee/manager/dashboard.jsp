@@ -1,4 +1,4 @@
-﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
     <!DOCTYPE html>
     <html>
 
@@ -6,6 +6,7 @@
         <meta charset="UTF-8">
         <title>Manager Dashboard | CoolStock</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
         <style>
             body {
@@ -25,8 +26,8 @@
                     <div
                         class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-7 rounded-2xl mb-8 flex justify-between items-center shadow-lg">
                         <div>
-                            <h1 class="text-3xl font-black">📊 Manager Dashboard</h1>
-                            <p class="opacity-80 mt-1">Receive orders and assign them to Delivery Boys</p>
+                            <h1 class="text-3xl font-black">Manager Dashboard</h1>
+                            <p class="opacity-80 mt-1">Assign orders, track deliveries and manage inventory</p>
                         </div>
                         <div class="text-right">
                             <div id="liveDate" class="text-sm opacity-70"></div>
@@ -50,38 +51,62 @@
 
                             rs=stmt.executeQuery("SELECT id, name FROM delivery_boys");
                             while(rs.next()) {
-                            deliveryBoysList.add(new String[]{String.valueOf(rs.getInt("id")), rs.getString("name")});
+                                deliveryBoysList.add(new String[]{String.valueOf(rs.getInt("id")), rs.getString("name")});
                             }
-                            } catch(Exception e) { e.printStackTrace(); } %>
+                            } catch(Exception e) { e.printStackTrace(); }
+                            
+                            java.util.List<String> last7Days = new java.util.ArrayList<>();
+                            java.util.List<String> last7Revenue = new java.util.ArrayList<>();
+                            java.util.List<String> last7Orders = new java.util.ArrayList<>();
+                            try (java.sql.Connection c = com.coolstack.util.DBConnection.getConnection();
+                                 java.sql.Statement s = c.createStatement();
+                                 java.sql.ResultSet rSet = s.executeQuery(
+                                    "SELECT DATE(order_date) as dt, SUM(total_amount) as rev, COUNT(id) as ords FROM orders GROUP BY DATE(order_date) ORDER BY DATE(order_date) DESC LIMIT 7")) {
+                                while (rSet.next()) {
+                                    last7Days.add("\"" + rSet.getString("dt") + "\"");
+                                    last7Revenue.add((rSet.getString("rev") != null ? rSet.getString("rev") : "0"));
+                                    last7Orders.add(rSet.getString("ords"));
+                                }
+                            } catch(Exception e) {}
+                            java.util.Collections.reverse(last7Days);
+                            java.util.Collections.reverse(last7Revenue);
+                            java.util.Collections.reverse(last7Orders);
+                            %>
 
-                            <!-- Stats -->
+                            <!-- Stats — All 4 cards fully dynamic from DB -->
                             <div class="grid grid-cols-4 gap-6 mb-8">
-                                <div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
-                                    <p class="text-gray-400 text-sm">New Orders</p>
-                                    <p class="text-3xl font-black text-orange-500 mt-2" id="stat-new">
-                                        <%= tNew %>
-                                    </p>
-                                    <p class="text-orange-400 text-xs mt-1">Not yet assigned</p>
+                                <div class="bg-white p-6 rounded-2xl shadow hover:-translate-y-1 transition duration-200 border-l-4 border-orange-400">
+                                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">New Orders</p>
+                                    <p class="text-4xl font-black text-orange-500 mt-2" id="stat-new"><%= tNew %></p>
+                                    <p class="text-orange-400 text-xs mt-1">Pending, unassigned</p>
                                 </div>
-                                <div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
-                                    <p class="text-gray-400 text-sm">Assigned</p>
-                                    <p class="text-3xl font-black text-blue-600 mt-2">
-                                        <%= tAsn %>
-                                    </p>
-                                    <p class="text-blue-400 text-xs mt-1">Delivery in progress</p>
+                                <div class="bg-white p-6 rounded-2xl shadow hover:-translate-y-1 transition duration-200 border-l-4 border-blue-500">
+                                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">In Progress</p>
+                                    <p class="text-4xl font-black text-blue-600 mt-2"><%= tAsn %></p>
+                                    <p class="text-blue-400 text-xs mt-1">Assigned, on the way</p>
                                 </div>
-                                <div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
-                                    <p class="text-gray-400 text-sm">Delivered Today</p>
-                                    <p class="text-3xl font-black text-green-600 mt-2">
-                                        <%= tDelTody %>
-                                    </p>
-                                    <p class="text-green-400 text-xs mt-1">Cash collection pending</p>
+                                <div class="bg-white p-6 rounded-2xl shadow hover:-translate-y-1 transition duration-200 border-l-4 border-green-500">
+                                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">Delivered Today</p>
+                                    <p class="text-4xl font-black text-green-600 mt-2"><%= tDelTody %></p>
+                                    <p class="text-green-400 text-xs mt-1">Completed today</p>
                                 </div>
-                                <div class="bg-white p-6 rounded-2xl shadow hover:scale-105 transition">
-                                    <p class="text-gray-400 text-sm">Total Orders Today</p>
-                                    <p class="text-3xl font-black text-indigo-600 mt-2">
-                                        <%= tTotToday %>
-                                    </p>
+                                <div class="bg-white p-6 rounded-2xl shadow hover:-translate-y-1 transition duration-200 border-l-4 border-indigo-500">
+                                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">Total Orders Today</p>
+                                    <p class="text-4xl font-black text-indigo-600 mt-2"><%= tTotToday %></p>
+                                    <p class="text-indigo-400 text-xs mt-1">All orders placed today</p>
+                                </div>
+                            </div>
+
+                            <!-- ── REVENUE & ORDER CHARTS ────────────────────────── -->
+                            <div class="grid grid-cols-1 gap-6 mb-8">
+                                <div class="bg-white p-6 rounded-2xl shadow border border-gray-100">
+                                    <div class="mb-4">
+                                        <h2 class="text-xl font-bold text-gray-800">Weekly Performance</h2>
+                                        <p class="text-gray-400 text-sm mt-0.5">Revenue and Order Volume for the last 7 active days</p>
+                                    </div>
+                                    <div class="relative h-72 w-full">
+                                        <canvas id="performanceChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
 
@@ -89,13 +114,10 @@
                             <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
                                 <div class="flex justify-between items-center p-6 border-b bg-orange-50">
                                     <div>
-                                        <h2 class="text-xl font-bold text-gray-800">⏳ Pending Orders — Assign to
-                                            Delivery
-                                            Boy</h2>
-                                        <p class="text-gray-400 text-sm mt-0.5">These orders are placed by customers and
-                                            need to be assigned</p>
+                                        <h2 class="text-xl font-bold text-gray-800">Pending Orders &mdash; Assign to Delivery Boy</h2>
+                                        <p class="text-gray-400 text-sm mt-0.5">Orders placed by customers awaiting assignment</p>
                                     </div>
-                                    <span class="bg-gray-500 text-white text-sm font-bold px-4 py-1.5 rounded-full"
+                                    <span class="bg-orange-500 text-white text-sm font-bold px-4 py-1.5 rounded-full"
                                         id="pendingBadge">
                                         <%= tNew %> Unassigned
                                     </span>
@@ -122,28 +144,23 @@
                                                             <span
                                                                 class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full">Pending</span>
                                                         </div>
-                                                        <p class="text-sm text-gray-600">🏪 <span class="font-semibold">
-                                                                <%= shopName %>
-                                                            </span></p>
-                                                        <p class="text-sm text-indigo-600 font-semibold mt-1">💰 Total:
-                                                            ₹<%= totalAmt %>
-                                                        </p>
-                                                        <p class="text-xs text-gray-400 mt-1">📅 Placed: <%= ordDate %>
-                                                        </p>
+                                                        <p class="text-sm text-gray-600">Shop: <span class="font-semibold"><%= shopName %></span></p>
+                                                        <p class="text-sm text-indigo-600 font-semibold mt-1">Total: &#x20B9;<%= totalAmt %></p>
+                                                        <p class="text-xs text-gray-400 mt-1">Placed: <%= ordDate %></p>
                                                     </div>
                                                     <div class="flex flex-col gap-2 min-w-[200px]">
                                                         <select id="delivery-<%= orderId %>"
                                                             class="border-2 border-gray-200 p-2 rounded-xl text-sm focus:border-indigo-400 outline-none">
-                                                            <option value="">— Select Delivery Boy —</option>
+                                                            <option value="">-- Select Delivery Boy --</option>
                                                             <% for(String[] d : deliveryBoysList) { %>
-                                                                <option value="<%= d[0] %>">🛵 <%= d[1] %>
+                                                                <option value="<%= d[0] %>"><%= d[1] %>
                                                                 </option>
                                                                 <% } %>
                                                         </select>
                                                         <button
                                                             onclick="assignOrder('order-<%= orderId %>', '#ORD-<%= orderId %>', 'delivery-<%= orderId %>')"
                                                             class="bg-indigo-600 text-white py-2 rounded-xl font-bold text-sm hover:bg-indigo-700 transition">
-                                                            📌 Assign Order
+                                                            Assign Order
                                                         </button>
                                                     </div>
                                                 </div>
@@ -153,13 +170,13 @@
 
                                     <% if (pCount==0) { %>
                                         <div id='allAssigned' class='p-10 text-center text-gray-400'>
-                                            <div class='text-5xl mb-3'>🎉</div>
-                                            <p class='font-semibold text-lg'>All orders have been assigned!</p>
+                                            <p class='font-black text-2xl mb-2'>All Caught Up!</p>
+                                            <p class='font-semibold text-lg'>All orders have been assigned to delivery boys.</p>
                                         </div>
                                         <% } else { %>
                                             <div id='allAssigned' class='hidden p-10 text-center text-gray-400'>
-                                                <div class='text-5xl mb-3'>🎉</div>
-                                                <p class='font-semibold text-lg'>All orders have been assigned!</p>
+                                                <p class='font-black text-2xl mb-2'>All Caught Up!</p>
+                                                <p class='font-semibold text-lg'>All orders have been assigned to delivery boys.</p>
                                             </div>
                                             <% } %>
 
@@ -169,7 +186,8 @@
                             <!-- ONGOING ASSIGNED ORDERS -->
                             <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
                                 <div class="p-6 border-b">
-                                    <h2 class="text-xl font-bold text-gray-800">🛵 Ongoing Assigned Orders</h2>
+                                    <h2 class="text-xl font-bold text-gray-800">Ongoing Assigned Orders</h2>
+                                    <p class="text-gray-400 text-sm mt-0.5">Orders currently out for delivery</p>
                                 </div>
                                 <table class="w-full text-sm" id="assignedTable">
                                     <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
@@ -199,9 +217,7 @@
                                                 <td class="px-6 font-semibold text-indigo-600">₹<%=
                                                         rs.getBigDecimal("total_amount") %>
                                                 </td>
-                                                <td class="px-6">🛵 <%= rs.getString("delivery_boy_name") !=null ?
-                                                        rs.getString("delivery_boy_name") : "Not Assigned" %>
-                                                </td>
+                                                <td class="px-6 font-semibold text-gray-700"><%= rs.getString("delivery_boy_name") != null ? rs.getString("delivery_boy_name") : "Not Assigned" %></td>
                                                 <td class="px-6"><span
                                                         class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">
                                                         <%= rs.getString("status") %>
@@ -264,7 +280,7 @@
                         `;
                         tbody.prepend(row);
 
-                        showToast('📌 ' + orderId + ' assigned successfully!');
+                        showToast(orderId + ' assigned to ' + deliveryBoyName + ' successfully!');
                     } else {
                         alert("Failed to assign order due to server error");
                     }
@@ -284,6 +300,60 @@
                 document.getElementById('liveClock').innerText = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
                 document.getElementById('liveDate').innerText = now.toDateString();
             }, 1000);
+
+            // Chart Initialization
+            document.addEventListener('DOMContentLoaded', function() {
+                var ctx = document.getElementById('performanceChart').getContext('2d');
+                var performanceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [<%= String.join(",", last7Days) %>],
+                        datasets: [
+                            {
+                                label: 'Revenue (₹)',
+                                data: [<%= String.join(",", last7Revenue) %>],
+                                borderColor: 'rgb(79, 70, 229)', // Indigo 600
+                                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Orders',
+                                type: 'bar',
+                                data: [<%= String.join(",", last7Orders) %>],
+                                backgroundColor: 'rgba(249, 115, 22, 0.7)', // Orange 500
+                                borderRadius: 4,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: { display: true, text: 'Revenue (₹)' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: { display: true, text: 'Orders' },
+                                grid: { drawOnChartArea: false }
+                            }
+                        }
+                    }
+                });
+            });
         </script>
     </body>
 

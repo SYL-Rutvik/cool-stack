@@ -144,3 +144,23 @@ INSERT INTO managers_details (user_id, branch_location) VALUES (2, 'Main Warehou
 INSERT INTO customers_details (user_id, shop_name, address) VALUES (3, 'Ramesh General Store', 'Village Khari');
 INSERT INTO delivery_boys_details (user_id, vehicle_number) VALUES (4, 'GJ-01-XX-1234');
 INSERT INTO cashiers_details (user_id, counter_number) VALUES (5, 'Counter 1');
+
+ALTER TABLE products ADD COLUMN pieces_per_box INT NOT NULL DEFAULT 0;
+
+-- --------------------------------------------------------
+-- 7. AUDIT LOGS
+-- --------------------------------------------------------
+
+CREATE TABLE inventory_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    user_id INT NOT NULL,
+    action_type ENUM('Add Product', 'Restock', 'Edit Product', 'Delete Product', 'Bulk Delete') NOT NULL,
+    quantity_change INT DEFAULT 0,
+    prior_stock INT DEFAULT 0,
+    new_stock INT DEFAULT 0,
+    log_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
